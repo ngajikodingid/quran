@@ -38,17 +38,19 @@
         <div class="controls">
             <div class="tabs">
                 <button class="tab-button active" data-tab="surah-pane">Daftar Surah</button>
-                <button class="tab-button" data-tab="bookmark-pane">Bookmark</button>
+                <button class="tab-button" data-tab="juz-pane">Daftar Juz</button> <button class="tab-button" data-tab="bookmark-pane">Bookmark</button>
             </div>
             <div class="search-wrapper">
                 <i class="fas fa-search"></i>
-                <input type="search" id="search-input" placeholder="Cari nama surah...">
+                <input type="search" id="search-input" placeholder="Cari nama surah atau juz...">
             </div>
         </div>
         <div class="tab-content">
             <div id="loader">Memuat data...</div>
             <div id="surah-pane" class="tab-pane active">
                 <ul id="surah-list" class="data-list"></ul>
+            </div>
+            <div id="juz-pane" class="tab-pane"> <ul id="juz-list" class="data-list"></ul>
             </div>
             <div id="bookmark-pane" class="tab-pane">
                 <div class="empty-state">Bookmark akan muncul di sini.</div>
@@ -60,6 +62,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         const API_BASE_URL = 'https://equran.id/api/v2';
         const surahListContainer = document.getElementById('surah-list');
+        const juzListContainer = document.getElementById('juz-list'); // TAMBAHKAN INI
         const loader = document.getElementById('loader');
         const searchInput = document.getElementById('search-input');
 
@@ -69,15 +72,8 @@
                 const json = await response.json();
                 const surahs = json.data;
 
-                surahListContainer.innerHTML = surahs.map(surah => `
-                    <a href="detail.html?nomor=${surah.nomor}" class="list-item" data-searchable="${surah.namaLatin.toLowerCase()}">
-                        <span class="item-number">${surah.nomor}</span>
-                        <div class="item-content">
-                            <div class="item-title">${surah.namaLatin}</div>
-                            <div class="item-subtitle">${surah.arti} • ${surah.jumlahAyat} Ayat</div>
-                        </div>
-                        <div class="item-arabic">${surah.nama}</div>
-                    </a>`).join('');
+                populateSurahList(surahs);
+                populateJuzList(surahs); // Panggil fungsi baru
                 
                 loader.style.display = 'none';
             } catch (error) {
@@ -85,10 +81,54 @@
                 console.error("Error fetching API:", error);
             }
         };
+        
+        const populateSurahList = (surahs) => {
+             surahListContainer.innerHTML = surahs.map(surah => `
+                <a href="detail.html?nomor=${surah.nomor}" class="list-item" data-searchable="${surah.namaLatin.toLowerCase()}">
+                    <span class="item-number">${surah.nomor}</span>
+                    <div class="item-content">
+                        <div class="item-title">${surah.namaLatin}</div>
+                        <div class="item-subtitle">${surah.arti} • ${surah.jumlahAyat} Ayat</div>
+                    </div>
+                    <div class="item-arabic">${surah.nama}</div>
+                </a>`).join('');
+        };
+        
+        // FUNGSI BARU UNTUK MEMBUAT DAFTAR JUZ
+        const populateJuzList = (surahs) => {
+            // Data Juz ini kita definisikan manual karena tidak ada di API
+            const juzData = [
+                { juz: 1, surah: 1, ayat: 1 }, { juz: 2, surah: 2, ayat: 142 }, { juz: 3, surah: 2, ayat: 253 },
+                { juz: 4, surah: 3, ayat: 93 }, { juz: 5, surah: 4, ayat: 24 }, { juz: 6, surah: 4, ayat: 148 },
+                { juz: 7, surah: 5, ayat: 82 }, { juz: 8, surah: 6, ayat: 111 }, { juz: 9, surah: 7, ayat: 88 },
+                { juz: 10, surah: 8, ayat: 41 }, { juz: 11, surah: 9, ayat: 93 }, { juz: 12, surah: 11, ayat: 6 },
+                { juz: 13, surah: 12, ayat: 53 }, { juz: 14, surah: 15, ayat: 1 }, { juz: 15, surah: 17, ayat: 1 },
+                { juz: 16, surah: 18, ayat: 75 }, { juz: 17, surah: 21, ayat: 1 }, { juz: 18, surah: 23, ayat: 1 },
+                { juz: 19, surah: 25, ayat: 21 }, { juz: 20, surah: 27, ayat: 56 }, { juz: 21, surah: 29, ayat: 46 },
+                { juz: 22, surah: 33, ayat: 31 }, { juz: 23, surah: 36, ayat: 28 }, { juz: 24, surah: 39, ayat: 32 },
+                { juz: 25, surah: 41, ayat: 47 }, { juz: 26, surah: 46, ayat: 1 }, { juz: 27, surah: 51, ayat: 31 },
+                { juz: 28, surah: 58, ayat: 1 }, { juz: 29, surah: 67, ayat: 1 }, { juz: 30, surah: 78, ayat: 1 }
+            ];
+
+            juzListContainer.innerHTML = juzData.map(juz => {
+                const surahInfo = surahs.find(s => s.nomor === juz.surah);
+                // Kita akan link ke surah pertama di Juz tersebut, karena API detail kita berbasis surah
+                return `
+                    <a href="detail.html?nomor=${juz.surah}" class="list-item" data-searchable="juz ${juz.juz}">
+                        <span class="item-number">${juz.juz}</span>
+                        <div class="item-content">
+                            <div class="item-title">Juz ${juz.juz}</div>
+                            <div class="item-subtitle">Dimulai dari Surah ${surahInfo.namaLatin} ayat ${juz.ayat}</div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        };
 
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
-            document.querySelectorAll('#surah-list .list-item').forEach(item => {
+            const activePane = document.querySelector('.tab-pane.active');
+            activePane.querySelectorAll('.list-item').forEach(item => {
                 item.style.display = (item.dataset.searchable || '').includes(query) ? 'flex' : 'none';
             });
         });
