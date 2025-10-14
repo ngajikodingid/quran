@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Amiri+Quran&family=Noto+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         :root { --primary-color: #2E7D32; --background-color: #F8F9FA; --surface-color: #FFFFFF; --text-color: #212529; --border-color: #E9ECEF; --font-latin: 'Poppins', 'Noto Sans', sans-serif; --font-arabic: 'Amiri Quran', serif; }
         html { scroll-behavior: smooth; }
@@ -26,17 +26,15 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .content { padding: 20px; }
         .bismillah-header { font-family: var(--font-arabic); text-align: center; font-size: 24px; padding: 15px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
-        .verse-item { border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px; }
-        .verse-item:last-child { border-bottom: none; }
+        .verse-item { border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px; } .verse-item:last-child { border-bottom: none; }
         .verse-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .verse-number { background-color: var(--primary-color); color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
         .verse-actions { display: flex; gap: 8px; }
         .verse-actions button { background: #f1f3f5; border: 1px solid #ddd; width: 36px; height: 36px; border-radius: 50%; font-size: 14px; color: #555; cursor: pointer; transition: all 0.2s; }
         .verse-actions button:hover { background-color: #e9ecef; }
-        .verse-actions button.active { background-color: var(--primary-color); color: #FFD700; border-color: var(--secondary-color); }
+        .verse-actions button.active { background-color: var(--primary-color); color: #FFD700; }
         .arabic-text { font-family: var(--font-arabic); font-size: 28px; text-align: right; direction: rtl; line-height: 2.0; margin-bottom: 16px; }
-        .translation-text { font-size: 15px; line-height: 1.7; color: #444; margin-top: 16px; }
-        .translation-text.hidden { display: none; }
+        .translation-text { font-size: 15px; line-height: 1.7; color: #444; margin-top: 16px; } .translation-text.hidden { display: none; }
         .page-navigation { display: flex; justify-content: space-between; align-items: center; }
         .nav-button { background-color: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; }
         .nav-button:disabled { background-color: #ccc; cursor: not-allowed; }
@@ -84,33 +82,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextBtn = document.getElementById('next-page-btn');
     const pageInput = document.getElementById('page-number-input');
     const modal = document.getElementById('tafsir-modal');
-
     let currentPage = 1;
     let chaptersData = null;
     let currentAudio = null;
     let bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
 
-    const getUrlParameter = (name) => {
-        const url = new URL(window.location.href);
-        return url.searchParams.get(name);
-    };
+    const getUrlParameter = (name) => new URL(window.location.href).searchParams.get(name);
 
     const fetchAndDisplayPage = async (pageNumber) => {
-        if (pageNumber < 1 || pageNumber > 604) return;
+        if (!pageNumber || pageNumber < 1 || pageNumber > 604) return;
         currentPage = parseInt(pageNumber);
         verseContainer.style.display = 'none';
         loader.style.display = 'block';
-        if (location.hash) { location.href = location.href.split('#')[0]; } // Hapus hash saat ganti halaman
+        if (location.hash) { history.pushState("", document.title, window.location.pathname + window.location.search); }
         window.scrollTo(0, 0);
 
         const params = new URLSearchParams({ language: 'id', translations: 33, tafsirs: 167, audio: 7, fields: 'text_uthmani' });
         try {
             const response = await fetch(`${API_BASE_URL}/verses/by_page/${currentPage}?${params}`);
+            if (!response.ok) throw new Error(`Network response error: ${response.status}`);
             const data = await response.json();
             displayPageContent(data.verses);
             updateNavigation();
         } catch (error) {
-            verseContainer.innerHTML = "<p style='text-align:center;'>Gagal memuat halaman. Coba refresh.</p>";
+            verseContainer.innerHTML = `<p style='text-align:center;'>Gagal memuat halaman. Coba refresh.</p>`;
+            console.error("Fetch Error:", error);
         } finally {
             verseContainer.style.display = 'block';
             loader.style.display = 'none';
@@ -118,11 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const displayPageContent = (verses) => {
-        if (!verses || verses.length === 0) return;
+        if (!verses || !verses.length) return;
         verseContainer.innerHTML = '';
         const firstVerse = verses[0];
         const surahIds = [...new Set(verses.map(v => v.chapter_id))];
-        viewTitle.textContent = surahIds.map(id => chaptersData.find(c => c.id == id).name_simple).join(' & ');
+        viewTitle.textContent = surahIds.map(id => chaptersData.find(c => c.id == id)?.name_simple || '').join(' & ');
         juzInfo.textContent = `Juz ${firstVerse.juz_number}`;
         
         verses.forEach(verse => {
@@ -143,16 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
         });
         attachActionListeners(verses);
-
-        // Scroll to bookmarked verse if exists in URL
         const hash = window.location.hash.substring(1);
-        if (hash) {
-            const elementToScroll = document.getElementById(hash);
-            if (elementToScroll) {
-                elementToScroll.scrollIntoView();
-                elementToScroll.style.backgroundColor = 'rgba(255, 221, 0, 0.2)'; // Highlight sementara
-            }
-        }
+        if (hash) document.getElementById(hash)?.scrollIntoView();
     };
 
     const attachActionListeners = (versesData) => {
@@ -166,13 +154,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const handleAudio = (button) => {
-        if (currentAudio && !currentAudio.paused) { currentAudio.pause(); }
+        if (currentAudio) { currentAudio.pause(); }
         currentAudio = new Audio(`https://verses.quran.com/${button.dataset.audioUrl}`);
         currentAudio.play();
     };
 
     const openTafsirModal = (verse) => {
-        modal.querySelector('#tafsir-title').textContent = `Tafsir ${chaptersData.find(c => c.id == verse.chapter_id).name_simple} Ayat ${verse.verse_number}`;
+        const surahName = chaptersData.find(c => c.id == verse.chapter_id)?.name_simple || '';
+        modal.querySelector('#tafsir-title').textContent = `Tafsir ${surahName} Ayat ${verse.verse_number}`;
         modal.querySelector('#tafsir-text').innerHTML = verse.tafsirs[0].text;
         modal.classList.add('active');
     };
@@ -194,23 +183,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const initializePage = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/chapters?language=id`);
+            if (!res.ok) throw new Error('Gagal mengambil daftar surah');
             chaptersData = (await res.json()).chapters;
+
             const surahId = getUrlParameter('surah');
             const juzId = getUrlParameter('juz');
             let startPage = 1;
+
             if (surahId) {
-                startPage = chaptersData.find(c => c.id == surahId).pages[0];
+                const surahInfo = chaptersData.find(c => c.id == surahId);
+                startPage = surahInfo ? surahInfo.pages[0] : 1;
             } else if (juzId) {
                 const resJuz = await fetch(`${API_BASE_URL}/juzs/${juzId}`);
+                if (!resJuz.ok) throw new Error('Gagal mengambil data juz');
                 const juzData = (await resJuz.json()).juz;
-                const firstVerseKey = Object.keys(juzData.verse_mapping)[0];
-                const resVerse = await fetch(`${API_BASE_URL}/verses/by_key/${firstVerseKey}?fields=page_number`);
-                const verseData = (await resVerse.json()).verse;
-                startPage = verseData.page_number;
+                
+                // --- BAGIAN YANG DIPERBAIKI ---
+                const startingSurah = Object.keys(juzData.verse_mapping)[0];
+                const startingAyat = juzData.verse_mapping[startingSurah];
+                const fullVerseKey = `${startingSurah}:${startingAyat}`; // Membuat kunci yang benar, cth: "1:1"
+                
+                const resVerse = await fetch(`${API_BASE_URL}/verses/by_key/${fullVerseKey}?fields=page_number`);
+                if (!resVerse.ok) throw new Error('Gagal mengambil data halaman ayat');
+                startPage = (await resVerse.json()).verse.page_number;
             }
             fetchAndDisplayPage(startPage);
         } catch (error) {
-            loader.innerHTML = "Gagal memuat data awal. Coba refresh halaman.";
+            loader.innerHTML = `Gagal memuat data awal. Coba refresh halaman.<br><small>${error.message}</small>`;
+            console.error("Initialization Error:", error);
         }
     };
     
