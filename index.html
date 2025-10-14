@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage - Al-Qur'an Digital</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Amiri+Quran&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #2E7D32;
+            --secondary-color: #1B5E20;
+            --background-color: #F8F9FA;
+            --surface-color: #FFFFFF;
+            --text-color: #212529;
+            --subtle-text-color: #6c757d;
+            --border-color: #E9ECEF;
+            --font-latin: 'Poppins', sans-serif;
+            --font-arabic: 'Amiri Quran', serif;
+        }
+
+        body {
+            font-family: var(--font-latin);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 15px auto;
+            background-color: var(--surface-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .controls {
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            background-color: var(--surface-color);
+            z-index: 10;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab-button {
+            flex: 1;
+            padding: 14px 10px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--subtle-text-color);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .tab-button:hover:not(.active) {
+            color: var(--text-color);
+        }
+        
+        .search-wrapper {
+            position: relative;
+        }
+        #search-input {
+            width: 100%;
+            padding: 12px 15px 12px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            background-color: #F8F9FA;
+            box-sizing: border-box;
+        }
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--subtle-text-color);
+        }
+
+        .tab-content {
+            padding: 0 20px 20px 20px;
+        }
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .data-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 5px;
+            border-bottom: 1px solid var(--border-color);
+            text-decoration: none;
+            color: var(--text-color);
+            transition: background-color 0.2s;
+        }
+        .list-item:hover {
+            background-color: #f8f9fa;
+        }
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-number {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--subtle-text-color);
+            margin-right: 15px;
+            width: 25px;
+            text-align: center;
+        }
+        .item-content {
+            flex-grow: 1;
+        }
+        .item-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .item-subtitle {
+            font-size: 12px;
+            color: var(--subtle-text-color);
+        }
+        .item-arabic {
+            font-family: var(--font-arabic);
+            font-size: 22px;
+            color: var(--primary-color);
+            margin-left: 15px;
+        }
+        
+        #loader {
+            text-align: center;
+            padding: 50px;
+        }
+        .empty-state {
+             text-align: center;
+             padding: 50px;
+             color: var(--subtle-text-color);
+        }
+
+        @media (max-width: 480px) {
+            .container { margin: 5px; }
+            .tab-button { font-size: 14px; }
+            .item-title { font-size: 15px; }
+            .item-arabic { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="controls">
+            <div class="tabs">
+                <button class="tab-button active" data-tab="surah-pane">Daftar Surah</button>
+                <button class="tab-button" data-tab="juz-pane">Daftar Juz</button>
+                <button class="tab-button" data-tab="bookmark-pane">Bookmark</button>
+            </div>
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="search" id="search-input" placeholder="Cari nama surah atau juz...">
+            </div>
+        </div>
+
+        <div class="tab-content">
+            <div id="loader">Memuat data...</div>
+
+            <div id="surah-pane" class="tab-pane active">
+                <ul id="surah-list" class="data-list"></ul>
+            </div>
+            <div id="juz-pane" class="tab-pane">
+                <ul id="juz-list" class="data-list"></ul>
+            </div>
+            <div id="bookmark-pane" class="tab-pane">
+                <ul id="bookmark-list" class="data-list"></ul>
+                <div id="bookmark-empty" class="empty-state" style="display: none;">
+                    <p>Anda belum menambahkan bookmark.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const API_BASE_URL = 'https://api.quran.com/api/v4';
+
+        const tabs = document.querySelectorAll('.tab-button');
+        const panes = document.querySelectorAll('.tab-pane');
+        const searchInput = document.getElementById('search-input');
+        const loader = document.getElementById('loader');
+        
+        const surahListContainer = document.getElementById('surah-list');
+        const juzListContainer = document.getElementById('juz-list');
+        const bookmarkListContainer = document.getElementById('bookmark-list');
+        const bookmarkEmpty = document.getElementById('bookmark-empty');
+
+        let chaptersData = [];
+        let juzsData = [];
+
+        const initializeApp = async () => {
+            try {
+                const [chaptersRes, juzsRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/chapters?language=id`),
+                    fetch(`${API_BASE_URL}/juzs`)
+                ]);
+                const chapters = await chaptersRes.json();
+                const juzs = await juzsRes.json();
+                
+                chaptersData = chapters.chapters;
+                juzsData = juzs.juzs;
+
+                populateSurahList();
+                populateJuzList();
+                loadBookmarks();
+
+                loader.style.display = 'none';
+
+            } catch (error) {
+                console.error("Gagal memuat data awal:", error);
+                loader.textContent = "Gagal memuat data. Silakan refresh halaman.";
+            }
+        };
+
+        const populateSurahList = () => {
+            surahListContainer.innerHTML = '';
+            chaptersData.forEach(surah => {
+                const listItem = `
+                    <a href="/p/detail.html?surah=${surah.id}" class="list-item" data-searchable="${surah.name_simple.toLowerCase()} ${surah.translated_name.name.toLowerCase()}">
+                        <span class="item-number">${surah.id}</span>
+                        <div class="item-content">
+                            <div class="item-title">${surah.name_simple}</div>
+                            <div class="item-subtitle">${surah.translated_name.name} • ${surah.verses_count} Ayat</div>
+                        </div>
+                        <div class="item-arabic">${surah.name_arabic}</div>
+                    </a>
+                `;
+                surahListContainer.innerHTML += listItem;
+            });
+        };
+
+        const populateJuzList = () => {
+            juzListContainer.innerHTML = '';
+            juzsData.forEach(juz => {
+                 const firstVerse = Object.entries(juz.verse_mapping)[0];
+                 const surahNumber = firstVerse[0];
+                 const surahName = chaptersData.find(c => c.id == surahNumber).name_simple;
+                 
+                const listItem = `
+                    <a href="/p/detail.html?juz=${juz.juz_number}" class="list-item" data-searchable="juz ${juz.juz_number}">
+                        <span class="item-number">${juz.juz_number}</span>
+                        <div class="item-content">
+                            <div class="item-title">Juz ${juz.juz_number}</div>
+                            <div class="item-subtitle">Dimulai dari Surah ${surahName} ayat ${firstVerse[1]}</div>
+                        </div>
+                    </a>
+                `;
+                juzListContainer.innerHTML += listItem;
+            });
+        };
+
+        const loadBookmarks = () => {
+            const bookmarks = JSON.parse(localStorage.getItem('quranBookmarks')) || [];
+            bookmarkListContainer.innerHTML = '';
+            if (bookmarks.length === 0) {
+                bookmarkListContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>Bookmark akan muncul di sini setelah Anda menandainya.</p>
+                    </div>`;
+            } else {
+                // Future logic for bookmarks
+            }
+        };
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(item => item.classList.remove('active'));
+                panes.forEach(pane => pane.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const activePane = document.querySelector('.tab-pane.active');
+            const items = activePane.querySelectorAll('.list-item');
+
+            items.forEach(item => {
+                const searchableText = item.dataset.searchable || '';
+                if (searchableText.includes(query)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        initializeApp();
+    });
+    </script>
+</body>
+</html>
