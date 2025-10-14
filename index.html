@@ -38,7 +38,8 @@
         <div class="controls">
             <div class="tabs">
                 <button class="tab-button active" data-tab="surah-pane">Daftar Surah</button>
-                <button class="tab-button" data-tab="juz-pane">Daftar Juz</button> <button class="tab-button" data-tab="bookmark-pane">Bookmark</button>
+                <button class="tab-button" data-tab="juz-pane">Daftar Juz</button>
+                <button class="tab-button" data-tab="bookmark-pane">Bookmark</button>
             </div>
             <div class="search-wrapper">
                 <i class="fas fa-search"></i>
@@ -47,91 +48,86 @@
         </div>
         <div class="tab-content">
             <div id="loader">Memuat data...</div>
-            <div id="surah-pane" class="tab-pane active">
-                <ul id="surah-list" class="data-list"></ul>
-            </div>
-            <div id="juz-pane" class="tab-pane"> <ul id="juz-list" class="data-list"></ul>
-            </div>
-            <div id="bookmark-pane" class="tab-pane">
-                <div class="empty-state">Bookmark akan muncul di sini.</div>
-            </div>
+            <div id="surah-pane" class="tab-pane active"><ul id="surah-list" class="data-list"></ul></div>
+            <div id="juz-pane" class="tab-pane"><ul id="juz-list" class="data-list"></ul></div>
+            <div id="bookmark-pane" class="tab-pane"><ul id="bookmark-list" class="data-list"></ul></div>
         </div>
     </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const API_BASE_URL = 'https://equran.id/api/v2';
+        const API_BASE_URL = 'https://api.quran.com/api/v4';
         const surahListContainer = document.getElementById('surah-list');
-        const juzListContainer = document.getElementById('juz-list'); // TAMBAHKAN INI
+        const juzListContainer = document.getElementById('juz-list');
+        const bookmarkListContainer = document.getElementById('bookmark-list');
         const loader = document.getElementById('loader');
         const searchInput = document.getElementById('search-input');
+        
+        let chaptersData = [];
+        let juzsData = [];
 
         const initializeApp = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/surat`);
-                const json = await response.json();
-                const surahs = json.data;
-
-                populateSurahList(surahs);
-                populateJuzList(surahs); // Panggil fungsi baru
-                
+                const [chaptersRes, juzsRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/chapters?language=id`),
+                    fetch(`${API_BASE_URL}/juzs`)
+                ]);
+                chaptersData = (await chaptersRes.json()).chapters;
+                juzsData = (await juzsRes.json()).juzs;
+                populateSurahList();
+                populateJuzList();
+                loadBookmarks();
                 loader.style.display = 'none';
             } catch (error) {
-                loader.textContent = "Gagal memuat data. Pastikan Anda menjalankan ini dari server lokal (misal: VS Code Live Server) dan periksa koneksi internet.";
-                console.error("Error fetching API:", error);
+                loader.textContent = "Gagal memuat data. Silakan refresh halaman.";
             }
         };
-        
-        const populateSurahList = (surahs) => {
-             surahListContainer.innerHTML = surahs.map(surah => `
-                <a href="detail.html?nomor=${surah.nomor}" class="list-item" data-searchable="${surah.namaLatin.toLowerCase()}">
-                    <span class="item-number">${surah.nomor}</span>
+
+        const populateSurahList = () => {
+            surahListContainer.innerHTML = chaptersData.map(surah => `
+                <a href="detail.html?surah=${surah.id}" class="list-item" data-searchable="${surah.name_simple.toLowerCase()} ${surah.translated_name.name.toLowerCase()}">
+                    <span class="item-number">${surah.id}</span>
                     <div class="item-content">
-                        <div class="item-title">${surah.namaLatin}</div>
-                        <div class="item-subtitle">${surah.arti} • ${surah.jumlahAyat} Ayat</div>
+                        <div class="item-title">${surah.name_simple}</div>
+                        <div class="item-subtitle">${surah.translated_name.name} • ${surah.verses_count} Ayat</div>
                     </div>
-                    <div class="item-arabic">${surah.nama}</div>
+                    <div class="item-arabic">${surah.name_arabic}</div>
                 </a>`).join('');
         };
-        
-        // FUNGSI BARU UNTUK MEMBUAT DAFTAR JUZ
-        const populateJuzList = (surahs) => {
-            // Data Juz ini kita definisikan manual karena tidak ada di API
-            const juzData = [
-                { juz: 1, surah: 1, ayat: 1 }, { juz: 2, surah: 2, ayat: 142 }, { juz: 3, surah: 2, ayat: 253 },
-                { juz: 4, surah: 3, ayat: 93 }, { juz: 5, surah: 4, ayat: 24 }, { juz: 6, surah: 4, ayat: 148 },
-                { juz: 7, surah: 5, ayat: 82 }, { juz: 8, surah: 6, ayat: 111 }, { juz: 9, surah: 7, ayat: 88 },
-                { juz: 10, surah: 8, ayat: 41 }, { juz: 11, surah: 9, ayat: 93 }, { juz: 12, surah: 11, ayat: 6 },
-                { juz: 13, surah: 12, ayat: 53 }, { juz: 14, surah: 15, ayat: 1 }, { juz: 15, surah: 17, ayat: 1 },
-                { juz: 16, surah: 18, ayat: 75 }, { juz: 17, surah: 21, ayat: 1 }, { juz: 18, surah: 23, ayat: 1 },
-                { juz: 19, surah: 25, ayat: 21 }, { juz: 20, surah: 27, ayat: 56 }, { juz: 21, surah: 29, ayat: 46 },
-                { juz: 22, surah: 33, ayat: 31 }, { juz: 23, surah: 36, ayat: 28 }, { juz: 24, surah: 39, ayat: 32 },
-                { juz: 25, surah: 41, ayat: 47 }, { juz: 26, surah: 46, ayat: 1 }, { juz: 27, surah: 51, ayat: 31 },
-                { juz: 28, surah: 58, ayat: 1 }, { juz: 29, surah: 67, ayat: 1 }, { juz: 30, surah: 78, ayat: 1 }
-            ];
 
-            juzListContainer.innerHTML = juzData.map(juz => {
-                const surahInfo = surahs.find(s => s.nomor === juz.surah);
-                // Kita akan link ke surah pertama di Juz tersebut, karena API detail kita berbasis surah
+        const populateJuzList = () => {
+            juzListContainer.innerHTML = juzsData.map(juz => {
+                const firstVerseKey = Object.keys(juz.verse_mapping)[0];
+                const firstVerseNum = juz.verse_mapping[firstVerseKey];
+                const surahName = chaptersData.find(c => c.id == firstVerseKey).name_simple;
                 return `
-                    <a href="detail.html?nomor=${juz.surah}" class="list-item" data-searchable="juz ${juz.juz}">
-                        <span class="item-number">${juz.juz}</span>
+                    <a href="detail.html?juz=${juz.juz_number}" class="list-item" data-searchable="juz ${juz.juz_number}">
+                        <span class="item-number">${juz.juz_number}</span>
                         <div class="item-content">
-                            <div class="item-title">Juz ${juz.juz}</div>
-                            <div class="item-subtitle">Dimulai dari Surah ${surahInfo.namaLatin} ayat ${juz.ayat}</div>
+                            <div class="item-title">Juz ${juz.juz_number}</div>
+                            <div class="item-subtitle">Dimulai dari Surah ${surahName} ayat ${firstVerseNum}</div>
                         </div>
-                    </a>
-                `;
+                    </a>`;
             }).join('');
         };
 
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            const activePane = document.querySelector('.tab-pane.active');
-            activePane.querySelectorAll('.list-item').forEach(item => {
-                item.style.display = (item.dataset.searchable || '').includes(query) ? 'flex' : 'none';
-            });
-        });
+        const loadBookmarks = () => {
+            const bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
+            if (bookmarks.length === 0) {
+                bookmarkListContainer.innerHTML = `<div class="empty-state">Bookmark akan muncul di sini.</div>`;
+            } else {
+                bookmarkListContainer.innerHTML = bookmarks.map(bm => {
+                    const [surahNum, ayatNum] = bm.split(':');
+                    const surahInfo = chaptersData.find(c => c.id == surahNum);
+                    return `<a href="detail.html?surah=${surahNum}#${bm}" class="list-item">
+                                <span class="item-number"><i class="fas fa-star" style="color:#FFC107;"></i></span>
+                                <div class="item-content">
+                                    <div class="item-title">Surah ${surahInfo.name_simple} Ayat ${ayatNum}</div>
+                                </div>
+                            </a>`;
+                }).join('');
+            }
+        };
         
         document.querySelectorAll('.tab-button').forEach(tab => tab.addEventListener('click', (e) => {
              document.querySelector('.tab-button.active').classList.remove('active');
@@ -139,6 +135,13 @@
              e.target.classList.add('active');
              document.getElementById(e.target.dataset.tab).classList.add('active');
         }));
+        
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            document.querySelector('.tab-pane.active').querySelectorAll('.list-item').forEach(item => {
+                item.style.display = (item.dataset.searchable || '').includes(query) ? 'flex' : 'none';
+            });
+        });
 
         initializeApp();
     });
