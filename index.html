@@ -250,7 +250,7 @@
             surahListContainer.innerHTML = '';
             chaptersData.forEach(surah => {
                 const listItem = `
-                    <a href="/p/detail.html?surah=${surah.id}" class="list-item" data-searchable="${surah.name_simple.toLowerCase()} ${surah.translated_name.name.toLowerCase()}">
+                    <a href="detail.html?surah=${surah.id}" class="list-item" data-searchable="${surah.name_simple.toLowerCase()} ${surah.translated_name.name.toLowerCase()}">
                         <span class="item-number">${surah.id}</span>
                         <div class="item-content">
                             <div class="item-title">${surah.name_simple}</div>
