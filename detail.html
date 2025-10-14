@@ -58,7 +58,7 @@
     <header class="page-header sticky-bar">
         <div class="header-top">
             <div class="header-info">
-                <a href="/p/home.html" class="back-button"><i class="fas fa-arrow-left"></i></a>
+                <a href="home.html" class="back-button"><i class="fas fa-arrow-left"></i></a>
                 <div>
                     <h1 id="view-title">Memuat...</h1>
                     <div id="juz-info"></div>
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
             displayPageContent(data.verses);
             updateNavigation();
         } catch (error) {
-            verseContainer.innerHTML = "<p style='text-align:center;'>Gagal memuat halaman.</p>";
+            verseContainer.innerHTML = "<p style='text-align:center;'>Gagal memuat halaman. Periksa koneksi internet Anda.</p>";
         } finally {
             verseContainer.style.display = 'block';
             loader.style.display = 'none';
@@ -204,13 +204,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (surahId) {
                 startPage = chaptersData.find(c => c.id == surahId).pages[0];
             } else if (juzId) {
-                // Perkiraan halaman awal untuk Juz
                 startPage = Math.ceil((juzId - 1) * 20.13) + 1;
-                startPage = Math.min(startPage, 604); // Pastikan tidak melebihi 604
+                startPage = Math.min(startPage, 604);
             }
             fetchAndDisplayPage(startPage);
         } catch (error) {
-            loader.innerHTML = "Gagal memuat data awal. Silakan kembali dan coba lagi.";
+            loader.innerHTML = "Gagal memuat data awal. Periksa koneksi internet Anda.";
         }
     };
     
