@@ -131,6 +131,7 @@
     <a href="#" id="menu-show-tafsir"><i class="fas fa-book-open"></i> Lihat Tafsir</a>
     <a href="#" id="menu-bookmark"><i class="far fa-star"></i> Simpan ke Bookmark</a>
 </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const QURAN_API_URL = 'https://api.quran.com/api/v4';
@@ -153,13 +154,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPage = 1;
     let chaptersData = null;
     let pageDataCache = {};
-    let tafsirCache = {};
     let currentAudio = null;
     let bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
     const fontSizes = ['medium', 'large', 'xl', 'small'];
     let currentSizeIndex = 0;
     
-    // --- DAFTAR TAFSIR BARU ---
     const availableTafsirs = [
         { id: 167, name: 'Kemenag (Ringkas)', lang: 'id' },
         { id: 168, name: 'Kemenag (Lengkap)', lang: 'id' },
@@ -169,18 +168,85 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 14,  name: 'Ibn Kathir', lang: 'ar' },
         { id: 15,  name: 'At-Tabari', lang: 'ar' },
     ];
+    const allTafsirIds = availableTafsirs.map(t => t.id).join(',');
 
     const getUrlParameter = (name) => new URL(window.location.href).searchParams.get(name);
 
     const fetchAndDisplayPage = async (pageNumber, keepPosition = false) => {
-        // ... (fungsi ini tidak berubah) ...
+        if (!pageNumber || pageNumber < 1 || pageNumber > 604) return;
+        currentPage = parseInt(pageNumber);
+        verseContainer.style.display = 'none';
+        loader.style.display = 'block';
+        if (!keepPosition) {
+            if (location.hash) { history.pushState("", document.title, window.location.pathname + window.location.search); }
+            window.scrollTo(0, 0);
+        }
+        if (pageDataCache[currentPage]) {
+            displayPageContent(pageDataCache[currentPage]);
+            updateSurahNavigation(pageDataCache[currentPage][0].chapter_id);
+            return;
+        }
+        const params = new URLSearchParams({ language: 'id', translations: 33, tafsirs: allTafsirIds, audio: 7, fields: 'text_uthmani' });
+        try {
+            const response = await fetch(`${QURAN_API_URL}/verses/by_page/${currentPage}?${params}`);
+            if (!response.ok) throw new Error(`Network response error: ${response.status}`);
+            const data = await response.json();
+            pageDataCache[currentPage] = data.verses;
+            displayPageContent(data.verses);
+            updateSurahNavigation(data.verses[0].chapter_id);
+        } catch (error) {
+            verseContainer.innerHTML = `<p style='text-align:center;'>Gagal memuat halaman. Coba refresh.</p>`;
+        } finally {
+            verseContainer.style.display = 'block';
+            loader.style.display = 'none';
+        }
     };
 
     const displayPageContent = (verses) => {
-        // ... (fungsi ini tidak berubah) ...
+        if (!verses || !verses.length) return;
+        verseContainer.innerHTML = '';
+        let lastSurahId = null;
+        const firstVerseOnPage = verses[0];
+        const surahIds = [...new Set(verses.map(v => v.chapter_id))];
+        viewTitle.textContent = surahIds.map(id => chaptersData.find(c => c.id == id)?.name_simple || '').join(' & ');
+        juzInfo.textContent = `Juz ${firstVerseOnPage.juz_number}`;
+        verses.forEach(verse => {
+            if (verse.chapter_id !== lastSurahId) {
+                const surahInfo = chaptersData.find(c => c.id === verse.chapter_id);
+                if (surahInfo) {
+                    verseContainer.innerHTML += displaySurahHeader(surahInfo);
+                    if (surahInfo.bismillah_pre) {
+                         verseContainer.innerHTML += `<div class="bismillah-header">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>`;
+                    }
+                }
+                lastSurahId = verse.chapter_id;
+            }
+            const verseNumberArabic = new Intl.NumberFormat('ar-EG').format(verse.verse_number);
+            verseContainer.innerHTML += `
+                <div class="verse-item" id="${verse.verse_key}">
+                    <button class="verse-menu-button" data-verse-key="${verse.verse_key}"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="verse-header"><div></div><div class="verse-number-wrapper">${verseNumberArabic}</div></div>
+                    <p class="arabic-text">${verse.text_uthmani}</p>
+                    <p class="translation-text">${verse.translations[0].text.replace(/<[^>]*>/g, '')}</p>
+                </div>`;
+        });
+        attachActionListeners();
+        setInitialTranslationVisibility();
+        pageSelect.value = currentPage;
+        prevPageBtn.disabled = currentPage <= 1;
+        nextPageBtn.disabled = currentPage >= 604;
+        const hash = window.location.hash.substring(1);
+        if (hash) document.getElementById(hash)?.scrollIntoView();
     };
 
-    const displaySurahHeader = (surahInfo) => { /* ... (fungsi ini tidak berubah) ... */ };
+    const displaySurahHeader = (surahInfo) => {
+        return `<div class="surah-separator">
+                    <div class="surah-title-prefix">سُوْرَةُ</div>
+                    <div class="arabic-name">${surahInfo.name_arabic}</div>
+                    <div class="latin-name">${surahInfo.name_simple}</div>
+                    <div class="details">${surahInfo.revelation_place} • ${surahInfo.verses_count} AYAT</div>
+                </div>`;
+    };
     
     const attachActionListeners = () => {
         document.querySelectorAll('.verse-menu-button').forEach(button => {
@@ -191,33 +257,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
-    // --- PERBAIKAN UTAMA: Posisi Menu Tiga Titik ---
     const openVerseMenu = (button, verseKey) => {
-        document.getElementById('menu-play-audio').onclick = (e) => { e.preventDefault(); handleAudio(verseKey); verseMenu.style.display = 'none'; };
-        document.getElementById('menu-show-tafsir').onclick = (e) => { e.preventDefault(); openTafsirModal(verseKey); verseMenu.style.display = 'none'; };
+        const verse = pageDataCache[currentPage].find(v => v.verse_key === verseKey);
+        if (!verse) return;
+        document.getElementById('menu-play-audio').onclick = (e) => { e.preventDefault(); handleAudio(verse.audio.url); verseMenu.style.display = 'none'; };
+        document.getElementById('menu-show-tafsir').onclick = (e) => { e.preventDefault(); openTafsirModal(verse); verseMenu.style.display = 'none'; };
         const bookmarkLink = document.getElementById('menu-bookmark');
         const isBookmarked = bookmarks.includes(verseKey);
         bookmarkLink.innerHTML = isBookmarked ? `<i class="fas fa-star"></i> Hapus Bookmark` : `<i class="far fa-star"></i> Simpan Bookmark`;
         bookmarkLink.onclick = (e) => { e.preventDefault(); toggleBookmark(verseKey); verseMenu.style.display = 'none'; };
-        
         const rect = button.getBoundingClientRect();
         verseMenu.style.display = 'block';
         verseMenu.style.top = `${button.offsetTop + rect.height}px`;
-
-        // Logika dinamis untuk posisi horizontal
-        if ((rect.left + verseMenu.offsetWidth) > window.innerWidth) {
+        if ((rect.left + verseMenu.offsetWidth) > window.innerWidth - 15) {
             verseMenu.style.left = 'auto';
-            verseMenu.style.right = `${window.innerWidth - (rect.left + rect.width)}px`; // Buka dari kanan ke kiri
+            verseMenu.style.right = '5px';
         } else {
-            verseMenu.style.left = `${button.offsetLeft}px`; // Buka dari kiri ke kanan
+            verseMenu.style.left = `${button.offsetLeft}px`;
             verseMenu.style.right = 'auto';
         }
     };
 
-    const handleAudio = (verseKey) => {
-        const verse = pageDataCache[currentPage].find(v => v.verse_key === verseKey);
-        if (!verse || !verse.audio?.url) return;
-        const fullUrl = `https://verses.quran.com/${verse.audio.url}`;
+    const handleAudio = (audioUrl) => {
+        if (!audioUrl) return;
+        const fullUrl = `https://verses.quran.com/${audioUrl}`;
         if (currentAudio && !currentAudio.paused) {
             currentAudio.pause();
             if (currentAudio.src === fullUrl) { currentAudio = null; return; }
@@ -227,70 +290,89 @@ document.addEventListener('DOMContentLoaded', () => {
         currentAudio.onended = () => { currentAudio = null; };
     };
 
-    // --- PERBAIKAN UTAMA: Logika Tafsir dengan Dropdown ---
-    const openTafsirModal = (verseKey) => {
-        const [surahNum, ayatNum] = verseKey.split(':');
-        const surahInfo = chaptersData.find(c => c.id == surahNum);
-        if (!surahInfo) return;
-
+    const openTafsirModal = (verse) => {
+        const surahName = chaptersData.find(c => c.id == verse.chapter_id)?.name_simple || '';
         const modalTitle = modal.querySelector('#tafsir-title');
         const tafsirSelect = modal.querySelector('#tafsir-select');
-        
-        modalTitle.textContent = `Tafsir ${surahInfo.name_simple} Ayat ${ayatNum}`;
-        
-        // Isi dropdown
+        modalTitle.textContent = `Tafsir ${surahName} Ayat ${verse.verse_number}`;
         tafsirSelect.innerHTML = availableTafsirs.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-        
-        // Tambah event listener untuk dropdown
-        tafsirSelect.onchange = () => {
-            fetchAndDisplayTafsir(verseKey, tafsirSelect.value);
-        };
-
-        // Langsung muat tafsir pertama (default)
-        fetchAndDisplayTafsir(verseKey, tafsirSelect.value);
-
+        tafsirSelect.onchange = () => displaySelectedTafsir(verse, tafsirSelect.value);
+        displaySelectedTafsir(verse, tafsirSelect.value);
         modal.classList.add('active');
     };
 
-    const fetchAndDisplayTafsir = async (verseKey, tafsirId) => {
+    const displaySelectedTafsir = (verse, tafsirId) => {
         const tafsirContent = modal.querySelector('#tafsir-content');
-        tafsirContent.innerHTML = '<i>Memuat tafsir...</i>';
-        
-        const selectedTafsir = availableTafsirs.find(t => t.id == tafsirId);
-        tafsirContent.classList.toggle('arabic', selectedTafsir.lang === 'ar');
+        const selectedTafsirInfo = availableTafsirs.find(t => t.id == tafsirId);
+        const tafsirData = verse.tafsirs.find(t => t.id == tafsirId);
+        tafsirContent.classList.toggle('arabic', selectedTafsirInfo.lang === 'ar');
+        tafsirContent.innerHTML = tafsirData ? tafsirData.text : `Tafsir (${selectedTafsirInfo.name}) tidak tersedia untuk ayat ini.`;
+    };
 
-        // Cek Cache
-        if (tafsirCache[verseKey] && tafsirCache[verseKey][tafsirId]) {
-            tafsirContent.innerHTML = tafsirCache[verseKey][tafsirId];
-            return;
-        }
+    const toggleBookmark = (verseKey) => {
+        const index = bookmarks.indexOf(verseKey);
+        if (index > -1) bookmarks.splice(index, 1);
+        else bookmarks.push(verseKey);
+        localStorage.setItem('quranBookmarksV2', JSON.stringify(bookmarks));
+    };
 
-        try {
-            const response = await fetch(`${QURAN_API_URL}/tafsirs/${tafsirId}/by_verse/${verseKey}`);
-            if (!response.ok) throw new Error('Gagal mengambil data tafsir');
-            const json = await response.json();
-            const text = json.tafsir.text;
-
-            // Simpan ke Cache
-            if (!tafsirCache[verseKey]) tafsirCache[verseKey] = {};
-            tafsirCache[verseKey][tafsirId] = text;
-            
-            tafsirContent.innerHTML = text;
-        } catch (error) {
-            tafsirContent.innerHTML = `Gagal memuat tafsir. ${error.message}`;
-            console.error("Tafsir fetch error:", error);
-        }
+    const toggleAllTranslations = () => {
+        translationBtn.classList.toggle('active');
+        const show = translationBtn.classList.contains('active');
+        document.querySelectorAll('.translation-text').forEach(el => el.classList.toggle('hidden', !show));
     };
     
-    // ... (sisa fungsi-fungsi lain tidak ada perubahan)
-    const toggleBookmark = (verseKey) => { /* ... */ };
-    const toggleAllTranslations = () => { /* ... */ };
-    const setInitialTranslationVisibility = () => { /* ... */ };
-    const setTheme = (theme) => { /* ... */ };
-    const setFontSize = (sizeClass) => { /* ... */ };
-    const cycleFontSize = () => { /* ... */ };
-    const populateNavControls = () => { /* ... */ };
-    const updateSurahNavigation = (currentSurahId) => { /* ... */ };
+    const setInitialTranslationVisibility = () => {
+        const show = translationBtn.classList.contains('active');
+        document.querySelectorAll('.translation-text').forEach(el => el.classList.toggle('hidden', !show));
+    };
+
+    const setTheme = (theme) => {
+        body.classList.toggle('dark-mode', theme === 'dark');
+        localStorage.setItem('quranTheme', theme);
+    };
+
+    const setFontSize = (sizeClass) => {
+        fontSizes.forEach(size => body.classList.remove(`font-size-${size}`));
+        body.classList.add(`font-size-${sizeClass}`);
+        localStorage.setItem('quranFontSize', sizeClass);
+        currentSizeIndex = fontSizes.indexOf(sizeClass);
+    };
+
+    const cycleFontSize = () => {
+        currentSizeIndex = (currentSizeIndex + 1) % fontSizes.length;
+        setFontSize(fontSizes[currentSizeIndex]);
+    };
+
+    const populateNavControls = () => {
+        surahSelect.innerHTML = chaptersData.map(c => `<option value="${c.id}">${c.id}. ${c.name_simple}</option>`).join('');
+        pageSelect.innerHTML = Array.from({length: 604}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('');
+    };
+    
+    const updateSurahNavigation = (currentSurahId) => {
+        const surahId = parseInt(currentSurahId);
+        surahSelect.value = surahId;
+        const prevSurah = chaptersData.find(c => c.id === surahId - 1);
+        const nextSurah = chaptersData.find(c => c.id === surahId + 1);
+        if (prevSurah) {
+            prevSurahBtn.href = `detail.html?surah=${prevSurah.id}`;
+            prevSurahBtn.querySelector('span').textContent = prevSurah.name_simple;
+            prevSurahBtn.classList.remove('disabled');
+        } else {
+            prevSurahBtn.href = '#';
+            prevSurahBtn.querySelector('span').textContent = '';
+            prevSurahBtn.classList.add('disabled');
+        }
+        if (nextSurah) {
+            nextSurahBtn.href = `detail.html?surah=${nextSurah.id}`;
+            nextSurahBtn.querySelector('span').textContent = nextSurah.name_simple;
+            nextSurahBtn.classList.remove('disabled');
+        } else {
+            nextSurahBtn.href = '#';
+            nextSurahBtn.querySelector('span').textContent = '';
+            nextSurahBtn.classList.add('disabled');
+        }
+    };
     
     const initializePage = async () => {
         try {
