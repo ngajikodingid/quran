@@ -101,9 +101,9 @@
     </main>
     <footer class="page-footer sticky-bar">
         <div class="page-navigation">
-            <button id="next-page-btn" class="nav-button"><i class="fas fa-chevron-left"></i></button>
+            <button id="prev-page-btn" class="nav-button"><i class="fas fa-chevron-left"></i></button>
             <span id="page-number-display">Halaman 1</span>
-            <button id="prev-page-btn" class="nav-button"><i class="fas fa-chevron-right"></i></button>
+            <button id="next-page-btn" class="nav-button"><i class="fas fa-chevron-right"></i></button>
         </div>
     </footer>
 </div>
@@ -224,8 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
         attachActionListeners();
         setInitialTranslationVisibility();
         pageNumberDisplay.textContent = `Halaman ${currentPage}`;
-        prevPageBtn.disabled = currentPage >= 604;
-        nextPageBtn.disabled = currentPage <= 1;
+        prevPageBtn.disabled = currentPage <= 1;
+        nextPageBtn.disabled = currentPage >= 604;
         const hash = window.location.hash.substring(1);
         if (hash) document.getElementById(hash)?.scrollIntoView();
     };
@@ -295,6 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const displaySelectedTafsir = (verse, tafsirId) => {
         const tafsirContent = modal.querySelector('#tafsir-content');
         const selectedTafsirInfo = availableTafsirs.find(t => t.id == tafsirId);
+        if (!selectedTafsirInfo) return; // Guard clause
         const tafsirData = verse.tafsirs.find(t => t.id == tafsirId);
         tafsirContent.classList.toggle('arabic', selectedTafsirInfo.lang === 'ar');
         tafsirContent.innerHTML = tafsirData ? tafsirData.text.replace(/\n/g, '<br>') : `Tafsir (${selectedTafsirInfo.name}) tidak tersedia untuk ayat ini.`;
@@ -373,9 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
             verseMenu.style.display = 'none';
         }
     });
-    // Navigasi Footer (logika dibalik)
-    nextPageBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
     prevPageBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
+    nextPageBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
     
     const savedTheme = localStorage.getItem('quranTheme') || 'light';
     const savedFontSize = localStorage.getItem('quranFontSize') || 'medium';
