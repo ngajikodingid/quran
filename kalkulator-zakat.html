@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusat Kalkulator Zakat Modern</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* === CSS RESET & GENERAL STYLING === */
+        :root {
+            --primary-color: #28a745; /* Green */
+            --primary-dark: #218838;
+            --secondary-color: #f8f9fa;
+            --text-color: #343a40;
+            --light-gray: #e9ecef;
+            --white: #ffffff;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* === HEADER SECTION === */
+        .header-section {
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--white);
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 40px;
+        }
+
+        .header-section h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header-section p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+        
+        /* === ZAKAT MENU GRID === */
+        .zakat-menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            opacity: 0; /* Initially hidden for animation */
+            transition: opacity 0.8s ease-in-out;
+        }
+        
+        .zakat-menu-grid.loaded {
+            opacity: 1; /* Fade in when loaded */
+        }
+
+        /* === ZAKAT CARD STYLING === */
+        .zakat-card {
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--light-gray);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .zakat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .zakat-card .icon-wrapper {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+
+        .zakat-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .zakat-card p {
+            font-size: 0.95rem;
+            color: #6c757d;
+            flex-grow: 1; /* Makes description take up space, aligning buttons */
+            margin-bottom: 20px;
+        }
+
+        .zakat-card .btn {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .zakat-card .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* === FOOTER === */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 50px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        /* === RESPONSIVE DESIGN === */
+        @media (max-width: 768px) {
+            .header-section h1 {
+                font-size: 2.2rem;
+            }
+            .header-section p {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            .zakat-menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            .zakat-card {
+                padding: 20px;
+            }
+            .zakat-card .icon-wrapper {
+                font-size: 2.5rem;
+                margin-bottom: 15px;
+            }
+            .zakat-card h3 {
+                font-size: 1rem;
+            }
+            .zakat-card p {
+                font-size: 0.8rem;
+                margin-bottom: 15px;
+            }
+            .zakat-card .btn {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header-section">
+            <h1>Kalkulator Zakat</h1>
+            <p>Pilih jenis zakat yang ingin Anda hitung.</p>
+        </header>
+
+        <main>
+            <div class="zakat-menu-grid">
+                <a href="zakat-pertanian.html" class="zakat-card">
+                    <div class="icon-wrapper"><i class="fas fa-tractor"></i></div>
+                    <h3>Pertanian</h3>
+                    <p>Hitung zakat dari hasil panen padi, gandum, kurma, dll.</p>
+                    <span class="btn">Hitung</span>
+                </a>
+                
+                <a href="zakat-perdagangan.html" class="zakat-card">
+                    <div class="icon-wrapper"><i class="fas fa-store"></i></div>
+                    <h3>Perdagangan</h3>
+                    <p>Untuk aset dan barang dagangan dalam usaha Anda.</p>
+                    <span class="btn">Hitung</span>
+                </a>
+
+                <a href="zakat-emas-perak.html" class="zakat-card">
+                    <div class="icon-wrapper"><i class="fas fa-gem"></i></div>
+                    <h3>Emas & Perak</h3>
+                    <p>Kalkulator untuk emas dan perak yang disimpan.</p>
+                    <span class="btn">Hitung</span>
+                </a>
+
+                <a href="zakat-hasil-laut.html" class="zakat-card">
+                    <div class="icon-wrapper"><i class="fas fa-water"></i></div>
+                    <h3>Hasil Laut</h3>
+                    <p>Zakat untuk hasil budidaya perikanan atau tambak.</p>
+                    <span class="btn">Hitung</span>
+                </a>
+
+                <a href="zakat-perkebunan.html" class="zakat-card">
+                    <div class="icon-wrapper"><i class="fas fa-seedling"></i></div>
+                    <h3>Perkebunan</h3>
+                    <p>Untuk hasil dari kebun seperti kelapa sawit, kopi, dll.</p>
+                    <span class="btn">Hitung</span>
+                </a>
+
+                <a href="zakat-peternakan.html" class="zakat-card">
+                    <div class="icon-wrapper"><i class="fas fa-cow"></i></div>
+                    <h3>Peternakan</h3>
+                    <p>Hitung zakat untuk hewan ternak (sapi, kambing, dll).</p>
+                    <span class="btn">Hitung</span>
+                </a>
+                
+                <a href="zakat-perusahaan.html" class="zakat-card">
+                    <div class="icon-wrapper"><i class="fas fa-building"></i></div>
+                    <h3>Perusahaan</h3>
+                    <p>Perhitungan zakat untuk aset bersih badan usaha.</p>
+                    <span class="btn">Hitung</span>
+                </a>
+                
+                <a href="zakat-properti.html" class="zakat-card">
+                    <div class="icon-wrapper"><i class="fas fa-home"></i></div>
+                    <h3>Properti</h3>
+                    <p>Zakat dari pendapatan properti yang disewakan.</p>
+                    <span class="btn">Hitung</span>
+                </a>
+                
+                <a href="zakat-profesi.html" class="zakat-card">
+                    <div class="icon-wrapper"><i class="fas fa-briefcase"></i></div>
+                    <h3>Profesi</h3>
+                    <p>Zakat dari gaji, honor, dan pendapatan rutin pekerjaan.</p>
+                    <span class="btn">Hitung</span>
+                </a>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2025 Kalkulator Zakat by Santrilogy.</p>
+        </footer>
+    </div>
+
+    <script>
+        // JavaScript untuk animasi fade-in sederhana saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            const grid = document.querySelector('.zakat-menu-grid');
+            setTimeout(() => {
+                grid.classList.add('loaded');
+            }, 100);
+        });
+    </script>
+
+</body>
+</html>
