@@ -97,7 +97,6 @@
             box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
         }
 
-        /* [BARU] Input group untuk jumlah dan satuan */
         .input-group {
             display: flex;
         }
@@ -296,21 +295,12 @@
             <p>Besaran zakat pertanian berbeda tergantung pada usaha dan biaya yang dikeluarkan untuk pengairan. Ini mencerminkan keadilan dalam syariat Islam.</p>
             <br>
             <h4><strong>Zakat 10% (Pengairan Alami)</strong></h4>
-            <p>Dikenakan jika sumber air didapat secara alami tanpa biaya yang signifikan, seperti:</p>
-            <ul>
-                <li>Air hujan (tadah hujan)</li>
-                <li>Air sungai atau mata air yang mengalir bebas</li>
-            </ul>
+            <p>Dikenakan jika sumber air didapat secara alami tanpa biaya yang signifikan, seperti air hujan (tadah hujan) atau air sungai yang mengalir bebas.</p>
             <p>Kadar zakatnya lebih besar karena <strong>beban biaya yang ditanggung petani lebih ringan.</strong></p>
             <br>
             <h4><strong>Zakat 5% (Pengairan Berbayar)</strong></h4>
-            <p>Dikenakan jika petani perlu mengeluarkan biaya untuk mengairi sawahnya, seperti:</p>
-            <ul>
-                <li>Membeli solar untuk pompa air</li>
-                <li>Membayar iuran irigasi</li>
-                <li>Membuat sumur bor</li>
-            </ul>
-            <p>Kadar zakatnya lebih kecil karena <strong>ada biaya operasional yang harus dikeluarkan</strong>, sehingga zakat dihitung dari hasil yang lebih "bersih".</p>
+            <p>Dikenakan jika petani perlu mengeluarkan biaya untuk mengairi sawahnya, seperti membeli solar untuk pompa air atau membayar iuran irigasi.</p>
+            <p>Kadar zakatnya lebih kecil karena <strong>ada biaya operasional yang harus dikeluarkan</strong>.</p>
         </div>
     </div>
 
@@ -325,7 +315,6 @@
                 kacang_tunggak: 756.70
             };
 
-            // [BARU] Konversi satuan ke KG
             const conversionFactors = {
                 kg: 1,
                 kuintal: 100,
@@ -334,17 +323,15 @@
 
             const selectTanaman = document.getElementById('jenisTanaman');
             const inputPanen = document.getElementById('hasilPanen');
-            const selectSatuan = document.getElementById('satuanBerat'); // [BARU]
+            const selectSatuan = document.getElementById('satuanBerat');
             const radioIrigasi = document.querySelectorAll('input[name="irigasi"]');
             const nisabValueDisplay = document.getElementById('nisabValue');
             const hasilContainer = document.getElementById('hasilZakat');
             
-            // Modal Nishab
             const nisabModal = document.getElementById('nisabModal');
             const nisabInfoIcon = document.getElementById('nisabInfoIcon');
             const closeNisabBtn = document.getElementById('closeNisab');
             
-            // [BARU] Modal Irigasi
             const irrigationModal = document.getElementById('irrigationModal');
             const irrigationInfoIcon = document.getElementById('irrigationInfoIcon');
             const closeIrrigationBtn = document.getElementById('closeIrrigation');
@@ -357,7 +344,6 @@
                 const nishab = nishabData[jenisTanaman];
                 const hasilPanenInput = parseFloat(inputPanen.value) || 0;
                 
-                // [BARU] Logika konversi satuan
                 const satuan = selectSatuan.value;
                 const factor = conversionFactors[satuan];
                 const hasilPanenKg = hasilPanenInput * factor;
@@ -367,13 +353,18 @@
                 nisabValueDisplay.textContent = `${nishab.toLocaleString('id-ID')} kg`;
                 
                 if (hasilPanenKg >= nishab) {
-                    const jumlahZakat = hasilPanenKg * (kadarPersen / 100);
+                    // [DIUBAH] Logika untuk menyesuaikan output zakat
+                    // 1. Hitung zakat dalam satuan dasar (kg)
+                    const jumlahZakatKg = hasilPanenKg * (kadarPersen / 100);
+                    // 2. Konversi kembali hasil zakat ke satuan yang dipilih user
+                    const jumlahZakatOutput = jumlahZakatKg / factor;
+
                     hasilContainer.className = 'hasil-container wajib';
                     hasilContainer.innerHTML = `
                         <h3>Anda Wajib Membayar Zakat</h3>
                         <p>Hasil panen Anda (${hasilPanenKg.toLocaleString('id-ID')} kg) telah mencapai nishab.</p>
                         <p>Zakat yang harus dikeluarkan (${kadarPersen}%):</p>
-                        <div class="jumlah-zakat">${jumlahZakat.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg</div>
+                        <div class="jumlah-zakat">${jumlahZakatOutput.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${satuan}</div>
                     `;
                 } else {
                     hasilContainer.className = 'hasil-container tidak-wajib';
@@ -384,16 +375,11 @@
                 }
             }
 
-            // --- Pengelola Modal ---
-            // Modal Nishab
             nisabInfoIcon.onclick = () => nisabModal.style.display = 'block';
             closeNisabBtn.onclick = () => nisabModal.style.display = 'none';
-
-            // [BARU] Modal Irigasi
             irrigationInfoIcon.onclick = () => irrigationModal.style.display = 'block';
             closeIrrigationBtn.onclick = () => irrigationModal.style.display = 'none';
             
-            // Tutup modal jika klik di luar area
             window.onclick = (event) => {
                 if (event.target == nisabModal) nisabModal.style.display = 'none';
                 if (event.target == irrigationModal) irrigationModal.style.display = 'none';
@@ -402,24 +388,19 @@
             function updateRadioSelection() {
                 radioIrigasi.forEach(radio => {
                     const label = radio.parentElement;
-                    if(radio.checked) {
-                        label.classList.add('selected');
-                    } else {
-                        label.classList.remove('selected');
-                    }
+                    if(radio.checked) label.classList.add('selected');
+                    else label.classList.remove('selected');
                 });
             }
 
-            // --- Event Listeners ---
             selectTanaman.addEventListener('change', hitungZakat);
             inputPanen.addEventListener('input', hitungZakat);
-            selectSatuan.addEventListener('change', hitungZakat); // [BARU]
+            selectSatuan.addEventListener('change', hitungZakat);
             radioIrigasi.forEach(radio => radio.addEventListener('change', () => {
                 updateRadioSelection();
                 hitungZakat();
             }));
 
-            // --- Inisialisasi ---
             updateRadioSelection();
             hitungZakat();
         });
