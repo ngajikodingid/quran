@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const displaySelectedTafsir = (verse, tafsirId) => {
         const tafsirContent = modal.querySelector('#tafsir-content');
         const selectedTafsirInfo = availableTafsirs.find(t => t.id == tafsirId);
-        if (!selectedTafsirInfo) return; // Guard clause
+        if (!selectedTafsirInfo) return;
         const tafsirData = verse.tafsirs.find(t => t.id == tafsirId);
         tafsirContent.classList.toggle('arabic', selectedTafsirInfo.lang === 'ar');
         tafsirContent.innerHTML = tafsirData ? tafsirData.text.replace(/\n/g, '<br>') : `Tafsir (${selectedTafsirInfo.name}) tidak tersedia untuk ayat ini.`;
@@ -374,8 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
             verseMenu.style.display = 'none';
         }
     });
-    prevPageBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
-    nextPageBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
+    prevPageBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
+    nextPageBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
     
     const savedTheme = localStorage.getItem('quranTheme') || 'light';
     const savedFontSize = localStorage.getItem('quranFontSize') || 'medium';
