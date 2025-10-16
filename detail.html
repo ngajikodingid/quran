@@ -96,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loader.style.display = 'block';
         if (location.hash) { history.pushState("", document.title, window.location.pathname + window.location.search); }
         window.scrollTo(0, 0);
-
         const params = new URLSearchParams({ language: 'id', translations: 33, tafsirs: 167, audio: 7, fields: 'text_uthmani' });
         try {
             const response = await fetch(`${API_BASE_URL}/verses/by_page/${currentPage}?${params}`);
@@ -198,9 +197,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!resJuz.ok) throw new Error('Gagal mengambil data juz');
                 const juzData = (await resJuz.json()).juz;
                 
-                // --- BAGIAN YANG DIPERBAIKI ---
+                // --- PERBAIKAN UTAMA DI SINI ---
                 const startingSurah = Object.keys(juzData.verse_mapping)[0];
-                const startingAyat = juzData.verse_mapping[startingSurah];
+                const ayatRange = juzData.verse_mapping[startingSurah]; // Cth: "1-7"
+                const startingAyat = ayatRange.split('-')[0]; // Ambil angka pertama saja, yaitu "1"
                 const fullVerseKey = `${startingSurah}:${startingAyat}`; // Membuat kunci yang benar, cth: "1:1"
                 
                 const resVerse = await fetch(`${API_BASE_URL}/verses/by_key/${fullVerseKey}?fields=page_number`);
