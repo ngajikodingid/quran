@@ -46,7 +46,6 @@
       transition:background-color .3s, border-color .3s;
       background-color:var(--surface-color); /* fallback */
     }
-    /* gunakan color-mix jika tersedia */
     @supports (background-color: color-mix(in srgb, #000, #fff)){
       .sticky-bar{
         background-color: color-mix(in srgb, var(--surface-color) 95%, transparent);
@@ -70,7 +69,7 @@
     .spinner{ border:4px solid rgba(128,128,128,.2); width:36px; height:36px; border-radius:50%; border-left-color:var(--primary-color); margin:0 auto 15px; animation:spin 1s ease infinite; }
     @keyframes spin{ 100%{ transform:rotate(360deg); } }
 
-    /* beri ruang ekstra supaya tidak ketiban sticky footer */
+    /* ruang untuk sticky footer */
     .content{ padding:0 10px 80px 10px; }
 
     .surah-separator{ text-align:center; padding:30px 20px; margin:20px 10px; }
@@ -115,7 +114,7 @@
       position:absolute; top:15px; left:0;
     }
 
-    /* Popup menu: gunakan fixed agar akurat saat scroll */
+    /* Popup menu fixed agar akurat saat scroll */
     .verse-menu-popup{
       display:none; position:fixed; z-index:200;
       background-color:var(--surface-color);
@@ -178,10 +177,10 @@
 
     <footer class="page-footer sticky-bar">
       <div class="page-navigation">
-        <!-- Kiri = Previous, Kanan = Next (sesuai mushaf) -->
-        <button id="prev-page-btn" class="nav-button" title="Halaman Sebelumnya"><i class="fas fa-chevron-left"></i></button>
+        <!-- Sesuai mushaf: Kiri = Next (halaman berikutnya), Kanan = Previous -->
+        <button id="prev-page-btn" class="nav-button" title="Halaman Berikutnya"><i class="fas fa-chevron-left"></i></button>
         <span id="page-number-display" class="page-number-display">Halaman 1</span>
-        <button id="next-page-btn" class="nav-button" title="Halaman Berikutnya"><i class="fas fa-chevron-right"></i></button>
+        <button id="next-page-btn" class="nav-button" title="Halaman Sebelumnya"><i class="fas fa-chevron-right"></i></button>
       </div>
     </footer>
   </div>
@@ -221,12 +220,13 @@
       const fontSizeBtn = document.getElementById('font-size-toggle');
       const modal = document.getElementById('tafsir-modal');
       const verseMenu = document.getElementById('verse-menu');
-      const prevPageBtn = document.getElementById('prev-page-btn');
-      const nextPageBtn = document.getElementById('next-page-btn');
+      const prevPageBtn = document.getElementById('prev-page-btn'); // kiri (Next)
+      const nextPageBtn = document.getElementById('next-page-btn'); // kanan (Previous)
       const pageNumberDisplay = document.getElementById('page-number-display');
 
       let currentPage = 1;
       let chaptersData = null;
+      let chaptersById = {};
       let pageDataCache = {};
       let currentAudio = null;
       let bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
@@ -250,6 +250,25 @@
       // Helper: safe absolute URL untuk audio
       const toAbsoluteUrl = (u) => /^https?:\/\//i.test(u) ? u : `https://verses.quran.com/${String(u||'').replace(/^\/+/, '')}`;
 
+      // Cache util
+      const indexChapters = (chapters) => {
+        chaptersById = {};
+        chapters.forEach(c => { chaptersById[c.id] = c; });
+      };
+      const getChapter = (id) => chaptersById[id] || null;
+      const ensureChapter = async (id) => {
+        if (chaptersById[id]) return chaptersById[id];
+        try {
+          const r = await fetch(`${QURAN_API_URL}/chapters/${id}?language=id`);
+          if (r.ok) {
+            const ch = (await r.json()).chapter;
+            chaptersById[id] = ch;
+            return ch;
+          }
+        } catch {}
+        return null;
+      };
+
       const fetchAndDisplayPage = async (pageNumber, keepPosition = false) => {
         if (!pageNumber || pageNumber < 1 || pageNumber > 604) return;
         currentPage = parseInt(pageNumber);
@@ -272,9 +291,9 @@
 
         const params = new URLSearchParams({
           language: 'id',
-          translations: 33,             // Kemenag
-          tafsirs: allTafsirIds,        // ambil tafsir inline jika tersedia
-          audio: 7,                     // recitation id
+          translations: 33,
+          tafsirs: allTafsirIds,
+          audio: 7,
           fields: 'text_uthmani'
         });
 
@@ -299,21 +318,52 @@
         let lastSurahId = null;
         const firstVerseOnPage = verses[0];
         const primarySurahId = firstVerseOnPage.chapter_id;
-        const primarySurahInfo = chaptersData.find(c => c.id === primarySurahId);
+        let primarySurahInfo = getChapter(primarySurahId);
 
+        // Update header segera jika data sudah ada
         if (primarySurahInfo) {
-          viewTitle.textContent = primarySurahInfo.name_simple;
+          viewTitle.textContent = primarySurahInfo.name_simple || primarySurahInfo.name_arabic || `Surah ${primarySurahId}`;
           surahInfoHeader.textContent = `${primarySurahInfo.revelation_place} • ${primarySurahInfo.verses_count} AYAT`;
+        } else {
+          // Fallback: ambil 1 chapter lalu update header begitu selesai
+          ensureChapter(primarySurahId).then(info => {
+            if (info) {
+              viewTitle.textContent = info.name_simple || info.name_arabic || `Surah ${primarySurahId}`;
+              surahInfoHeader.textContent = `${info.revelation_place} • ${info.verses_count} AYAT`;
+            }
+          });
         }
 
         verses.forEach(verse => {
+          // Header surah setiap ganti surah
           if (verse.chapter_id !== lastSurahId) {
-            const surahInfo = chaptersData.find(c => c.id === verse.chapter_id);
+            const surahInfo = getChapter(verse.chapter_id);
             if (surahInfo) {
               verseContainer.innerHTML += displaySurahHeader(surahInfo);
               if (surahInfo.bismillah_pre) {
                 verseContainer.innerHTML += `<div class="bismillah-header">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>`;
               }
+            } else {
+              // Render placeholder, lalu update ketika ensureChapter selesai
+              verseContainer.innerHTML += `<div class="surah-separator" data-ch-id="${verse.chapter_id}">
+                  <div class="surah-title-prefix">سُوْرَةُ</div>
+                  <div class="arabic-name">...</div>
+                  <div class="latin-name">Surah ${verse.chapter_id}</div>
+                  <div class="details">...</div>
+                </div>`;
+              ensureChapter(verse.chapter_id).then(info => {
+                const el = verseContainer.querySelector(`.surah-separator[data-ch-id="${verse.chapter_id}"]`);
+                if (info && el) {
+                  el.innerHTML = `
+                    <div class="surah-title-prefix">سُوْرَةُ</div>
+                    <div class="arabic-name">${info.name_arabic}</div>
+                    <div class="latin-name">${info.name_simple}</div>
+                    <div class="details">${info.revelation_place} • ${info.verses_count} AYAT</div>`;
+                  if (info.bismillah_pre) {
+                    el.insertAdjacentHTML('afterend', `<div class="bismillah-header">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>`);
+                  }
+                }
+              });
             }
             lastSurahId = verse.chapter_id;
           }
@@ -339,8 +389,9 @@
         setInitialTranslationVisibility();
 
         pageNumberDisplay.textContent = `Halaman ${currentPage}`;
-        prevPageBtn.disabled = currentPage <= 1;
-        nextPageBtn.disabled = currentPage >= 604;
+        // DISABLE sesuai tombol baru (kiri = Next, kanan = Previous)
+        prevPageBtn.disabled = currentPage >= 604;
+        nextPageBtn.disabled = currentPage <= 1;
 
         const hash = window.location.hash.substring(1);
         if (hash) document.getElementById(hash)?.scrollIntoView();
@@ -365,7 +416,7 @@
         });
       };
 
-      // Posisi popup: fixed, hitung dari rect viewport, auto-kiri bila mentok kanan
+      // Popup fixed, auto-kiri bila mentok kanan
       const openVerseMenu = (button, verseKey) => {
         const verse = pageDataCache[currentPage]?.find(v => v.verse_key === verseKey);
         if (!verse) return;
@@ -395,10 +446,9 @@
           const gap = 12;
           let left = rect.left;
           const overRight = (left + menuW) > (window.innerWidth - gap);
-          if (overRight) left = rect.right - menuW;                  // buka ke kiri
+          if (overRight) left = rect.right - menuW; // buka ke kiri
           left = Math.max(gap, Math.min(left, window.innerWidth - menuW - gap));
 
-          // jaga-jaga tinggi popup melebihi viewport bawah
           const menuH = verseMenu.offsetHeight || 120;
           let top = rect.bottom + 2;
           if (top + menuH + gap > window.innerHeight) {
@@ -419,12 +469,13 @@
           if (currentAudio.src === fullUrl) { currentAudio = null; return; }
         }
         currentAudio = new Audio(fullUrl);
-        currentAudio.play().catch(() => { /* diamkan jika butuh user gesture */ });
+        currentAudio.play().catch(() => { /* mungkin perlu user gesture */ });
         currentAudio.onended = () => { currentAudio = null; };
       };
 
       const openTafsirModal = (verse) => {
-        const surahName = chaptersData.find(c => c.id == verse.chapter_id)?.name_simple || '';
+        const ch = getChapter(verse.chapter_id);
+        const surahName = (ch && (ch.name_simple || ch.name_arabic)) || '';
         const modalTitle = modal.querySelector('#tafsir-title');
         const tafsirSelect = modal.querySelector('#tafsir-select');
 
@@ -499,13 +550,14 @@
           const res = await fetch(`${QURAN_API_URL}/chapters?language=id`);
           if (!res.ok) throw new Error('Gagal mengambil daftar surah');
           chaptersData = (await res.json()).chapters;
+          indexChapters(chaptersData);
 
           const surahId = getUrlParameter('surah');
           const juzId = getUrlParameter('juz');
           let startPage = 1;
 
           if (surahId) {
-            const surahInfo = chaptersData.find(c => c.id == surahId);
+            const surahInfo = getChapter(Number(surahId));
             startPage = surahInfo ? surahInfo.pages[0] : 1;
           } else if (juzId) {
             const resJuz = await fetch(`${QURAN_API_URL}/juzs/${juzId}`);
@@ -513,7 +565,7 @@
             const juzData = (await resJuz.json()).juz;
             const startingSurah = Object.keys(juzData.verse_mapping)[0];
             const ayatRange = juzData.verse_mapping[startingSurah];
-            const startingAyat = ayatRange.split('-')[0];
+            const startingAyat = String(ayatRange).split('-')[0];
             const fullVerseKey = `${startingSurah}:${startingAyat}`;
             const resVerse = await fetch(`${QURAN_API_URL}/verses/by_key/${fullVerseKey}?fields=page_number`);
             if (!resVerse.ok) throw new Error('Gagal mengambil data halaman ayat');
@@ -526,7 +578,7 @@
         }
       };
 
-      // Events
+      // ==== EVENTS ====
       translationBtn.onclick = toggleAllTranslations;
       fontSizeBtn.onclick = cycleFontSize;
       themeToggleBtn.onclick = () => setTheme(body.classList.contains('dark-mode') ? 'light' : 'dark');
@@ -537,9 +589,41 @@
           verseMenu.style.display = 'none';
         }
       });
+      window.addEventListener('scroll', () => { verseMenu.style.display = 'none'; }, { passive:true });
 
-      prevPageBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
-      nextPageBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
+      // Tombol: KIRI = Next (page+1), KANAN = Previous (page-1)
+      prevPageBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
+      nextPageBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
+
+      // Swipe gesture: kiri → next, kanan → previous
+      let touchStartX = 0, touchStartY = 0, touchTime = 0;
+      const SWIPE_THRESHOLD = 50;   // px
+      const SWIPE_TIME = 600;       // ms
+      const swipeArea = document.querySelector('.container');
+
+      swipeArea.addEventListener('touchstart', (e) => {
+        const t = e.changedTouches[0];
+        touchStartX = t.pageX;
+        touchStartY = t.pageY;
+        touchTime = Date.now();
+      }, { passive:true });
+
+      swipeArea.addEventListener('touchend', (e) => {
+        const t = e.changedTouches[0];
+        const dx = t.pageX - touchStartX;
+        const dy = t.pageY - touchStartY;
+        const dt = Date.now() - touchTime;
+        if (dt > SWIPE_TIME) return;
+        if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
+
+        if (dx < 0 && currentPage < 604) {
+          // swipe kiri → next page (page+1)
+          fetchAndDisplayPage(currentPage + 1);
+        } else if (dx > 0 && currentPage > 1) {
+          // swipe kanan → previous page (page-1)
+          fetchAndDisplayPage(currentPage - 1);
+        }
+      }, { passive:true });
 
       // Restore preferensi
       const savedTheme = localStorage.getItem('quranTheme') || 'light';
