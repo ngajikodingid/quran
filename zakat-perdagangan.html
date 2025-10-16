@@ -56,7 +56,6 @@
         .input-group { position: relative; }
         .input-group .prefix { position: absolute; left: 1px; top: 1px; bottom: 1px; display: flex; align-items: center; padding: 0 12px; background-color: var(--secondary-color); border-right: 1px solid var(--border-color); border-radius: 8px 0 0 8px; font-weight: 500; }
 
-        /* Menggunakan type="text" agar bisa diformat, bukan "number" */
         input[type="text"] { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 1rem; transition: border-color 0.3s, box-shadow 0.3s; text-align: right; }
         .input-group input[type="text"] { padding-left: 50px; }
         input[type="text"]:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1); }
@@ -85,10 +84,10 @@
         .hasil-container .jumlah-zakat { font-size: 2em; font-weight: 700; margin: 10px 0; }
         
         .calculation-notes { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .calculation-notes .formula { font-family: monospace; background-color: var(--secondary-color); padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center; font-size: 1.1em;}
+        .calculation-notes h4 { font-size: 1rem; color: var(--text-color); margin-top: 20px; margin-bottom: 5px; }
         .calculation-notes p { font-size: 0.95rem; margin-bottom: 15px; }
-        .calculation-notes .formula { font-family: monospace; background-color: var(--secondary-color); padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center; }
-        
-        @media (max-width: 600px) { body { padding: 10px; } .kalkulator-container { padding: 20px; } header h1 { font-size: 1.5rem; } }
+
     </style>
 </head>
 <body>
@@ -105,7 +104,7 @@
                         <label for="hargaEmas">Harga Emas per Gram (saat ini)</label>
                         <div class="input-group">
                             <span class="prefix">Rp</span>
-                            <input type="text" id="hargaEmas" value="2.400.000">
+                            <input type="text" id="hargaEmas" value="2.400.000" inputmode="numeric" pattern="[0-9.]*">
                         </div>
                          <p class="user-note">
                             Harga di atas adalah kisaran. Untuk hasil akurat, silakan sesuaikan dengan harga emas hari ini. <br>
@@ -124,22 +123,30 @@
                 
                 <div class="form-group">
                     <details><summary>Modal</summary><p class="description">Seluruh harta yang mempengaruhi keberadaan barang dagangan, baik dari modal sendiri atau hasil utang, yang sengaja disiapkan untuk diputar.</p></details>
-                    <div class="input-group"><span class="prefix">Rp</span><input type="text" id="modal" placeholder="0"></div>
+                    <div class="input-group"><span class="prefix">Rp</span>
+                        <input type="text" id="modal" placeholder="0" inputmode="numeric" pattern="[0-9.]*">
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <details><summary>Simpanan (Nuqud)</summary><p class="description">Terdiri atas laba atau keuntungan yang masih tersimpan dalam 1 tahun niaga (haul).</p></details>
-                    <div class="input-group"><span class="prefix">Rp</span><input type="text" id="simpanan" placeholder="0"></div>
+                    <div class="input-group"><span class="prefix">Rp</span>
+                        <input type="text" id="simpanan" placeholder="0" inputmode="numeric" pattern="[0-9.]*">
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <details><summary>Piutang Dagang (al-Duyun al-Marjuwwah)</summary><p class="description">Tagihan kepada pihak lain yang diharapkan kembali dan bersifat menambah kas toko.</p></details>
-                    <div class="input-group"><span class="prefix">Rp</span><input type="text" id="piutangDagang" placeholder="0"></div>
+                    <div class="input-group"><span class="prefix">Rp</span>
+                        <input type="text" id="piutangDagang" placeholder="0" inputmode="numeric" pattern="[0-9.]*">
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <details><summary>Utang Tertanggung (Dain al-tajir)</summary><p class="description">Utang untuk menambah kuantitas barang dagangan (utang modal) yang harus ditanggung oleh pemilik usaha.</p></details>
-                    <div class="input-group"><span class="prefix">Rp</span><input type="text" id="utangTertanggung" placeholder="0"></div>
+                    <div class="input-group"><span class="prefix">Rp</span>
+                        <input type="text" id="utangTertanggung" placeholder="0" inputmode="numeric" pattern="[0-9.]*">
+                    </div>
                 </div>
             </form>
 
@@ -152,14 +159,15 @@
                 <p class="formula">(Modal + Simpanan + Piutang - Utang) x 2,5%</p>
                 
                 <h4>Biaya yang Menjadi Modal</h4>
-                <p>Penting untuk dicatat bahwa segala biaya tambahan yang menyebabkan bertambahnya **jumlah atau kuantitas** barang dagangan, maka biaya tersebut dihitung dan dimasukkan ke dalam komponen **Modal**.</p>
+                <p>Penting untuk dicatat bahwa segala biaya tambahan yang menyebabkan bertambahnya jumlah atau kuantitas barang dagangan, maka biaya tersebut dihitung dan dimasukkan ke dalam komponen Modal.</p>
                 
                 <h4>Sistem "Bawa-Laku-Bayar" (Konsinyasi)</h4>
-                <p>Jika Anda menambah barang dengan sistem ini (membawa barang dahulu dan membayar setelah laku), maka total nilai barang yang belum dibayar dihitung sebagai **Utang Tertanggung**.</p>
+                <p>Jika Anda menambah barang dengan sistem ini (membawa barang dahulu dan membayar setelah laku), maka total nilai barang yang belum dibayar dihitung sebagai Utang Tertanggung.</p>
                 
                 <h4>Pengambilan untuk Konsumsi Pribadi</h4>
-                <p>Uang kas atau barang dagangan yang diambil dari usaha untuk kebutuhan pribadi (konsumtif) **tidak termasuk** dalam harta yang wajib dizakati.</p>
+                <p>Uang kas atau barang dagangan yang diambil dari usaha untuk kebutuhan pribadi (konsumtif) tidak termasuk dalam harta yang wajib dizakati.</p>
             </div>
+            
         </main>
     </div>
 
@@ -176,14 +184,12 @@
             const formatRupiahDisplay = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
             const cleanInput = (value) => value.toString().replace(/\D/g, '');
 
-            // [BARU] Fungsi untuk memformat input dengan titik ribuan
             const formatInputAsRupiah = (event) => {
                 let input = event.target;
                 let value = input.value;
                 let cleanValue = cleanInput(value);
 
                 if (cleanValue) {
-                    // Format angka menggunakan Intl.NumberFormat
                     let formattedValue = new Intl.NumberFormat('id-ID').format(cleanValue);
                     input.value = formattedValue;
                 } else {
@@ -213,15 +219,11 @@
                 }
             }
 
-            // [DIUBAH] Menambahkan dua event listener ke setiap input
             allNumberInputs.forEach(input => {
-                // Listener untuk memformat tampilan input
                 input.addEventListener('input', formatInputAsRupiah);
-                // Listener untuk menghitung ulang zakat
                 input.addEventListener('input', hitungZakat);
             });
             
-            // Panggil fungsi sekali saat halaman dimuat untuk memformat nilai awal
             formatInputAsRupiah({ target: hargaEmasInput });
             hitungZakat();
         });
