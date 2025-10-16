@@ -37,7 +37,8 @@
         }
 
         .kalkulator-container {
-            max-width: 700px;
+            /* Lebar disesuaikan agar konsisten dengan homepage */
+            max-width: 1100px; 
             margin: 0 auto;
             background: var(--white);
             padding: 30px;
@@ -88,6 +89,11 @@
         .calculation-notes h4 { font-size: 1rem; color: var(--text-color); margin-top: 20px; margin-bottom: 5px; }
         .calculation-notes p { font-size: 0.95rem; margin-bottom: 15px; }
 
+        @media (max-width: 600px) { 
+            body { padding: 10px; } 
+            .kalkulator-container { padding: 20px; } 
+            header h1 { font-size: 1.5rem; } 
+        }
     </style>
 </head>
 <body>
