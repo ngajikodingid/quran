@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Zakat Pertanian</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #28a745;
+            --primary-dark: #218838;
+            --secondary-color: #f8f9fa;
+            --text-color: #343a40;
+            --border-color: #dee2e6;
+            --white: #ffffff;
+            --success-bg: #d1fae5;
+            --success-text: #065f46;
+            --warning-bg: #feefc3;
+            --warning-text: #7a5f03;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            padding: 20px;
+        }
+
+        .kalkulator-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .back-button:hover { color: var(--primary-dark); }
+
+        .form-group { margin-bottom: 25px; }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            background-color: var(--white);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+
+        /* [BARU] Input group untuk jumlah dan satuan */
+        .input-group {
+            display: flex;
+        }
+        .input-group input {
+            flex: 1;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            border-right: none;
+        }
+        .input-group select {
+            width: auto;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        
+        .info-icon {
+            margin-left: 10px;
+            color: #6c757d;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .info-icon:hover { color: var(--primary-color); }
+        
+        .nisab-display {
+            background-color: var(--secondary-color);
+            border: 1px dashed var(--primary-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .nisab-display p { margin: 0; }
+        .nisab-display .nisab-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .radio-group { display: flex; gap: 20px; }
+        .radio-option {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .radio-option input { margin-right: 10px; }
+        .radio-option.selected {
+            background-color: #e9f5ec;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+        
+        .hasil-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .hasil-container.wajib { background-color: var(--success-bg); color: var(--success-text); }
+        .hasil-container.tidak-wajib { background-color: var(--warning-bg); color: var(--warning-text); }
+        .hasil-container h3 { margin-top: 0; font-size: 1.2em; }
+        .hasil-container .jumlah-zakat { font-size: 2em; font-weight: 700; margin: 10px 0; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: var(--white);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            animation: slideIn 0.3s;
+        }
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover, .close-button:focus { color: #000; }
+        .modal-content h2 { color: var(--primary-color); margin-bottom: 15px; }
+        .modal-content ul { padding-left: 20px; }
+        .modal-content li { margin-bottom: 10px; }
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+        @keyframes slideIn { from {transform: translateY(-50px);} to {transform: translateY(0);} }
+        
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .kalkulator-container { padding: 20px; }
+            header h1 { font-size: 1.5rem; }
+            .radio-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="kalkulator-container">
+        <header>
+            <h1>Zakat Pertanian</h1>
+            <a href="index.html" class="back-button">
+                <i class="fas fa-arrow-left"></i> Kembali
+            </a>
+        </header>
+
+        <main>
+            <form id="zakatPertanianForm" onsubmit="return false;">
+                <div class="form-group">
+                    <label for="jenisTanaman">
+                        Pilih Jenis Hasil Tani
+                        <i class="fas fa-info-circle info-icon" id="nisabInfoIcon"></i>
+                    </label>
+                    <select id="jenisTanaman">
+                        <option value="padi_umum">Padi (Gabah Kering)</option>
+                        <option value="beras">Beras Putih</option>
+                        <option value="padi_kretek">Padi Kretek (Gabah Kering)</option>
+                        <option value="jagung_gandum">Jagung, Gandum, Lainnya</option>
+                        <option value="kacang_hijau">Kacang Hijau</option>
+                        <option value="kacang_tunggak">Kacang Tunggak</option>
+                    </select>
+                    <div class="nisab-display">
+                        <p>Batas Nishab (Wajib Zakat):</p>
+                        <span class="nisab-value" id="nisabValue">1.631,52 kg</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="hasilPanen">Jumlah Panen Anda</label>
+                    <div class="input-group">
+                        <input type="number" id="hasilPanen" placeholder="Contoh: 2000">
+                        <select id="satuanBerat">
+                            <option value="kg">Kg</option>
+                            <option value="kuintal">Kuintal</option>
+                            <option value="ton">Ton</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Metode Pengairan (Irigasi)
+                        <i class="fas fa-info-circle info-icon" id="irrigationInfoIcon"></i>
+                    </label>
+                    <div class="radio-group">
+                        <label class="radio-option" id="labelTadahHujan">
+                            <input type="radio" name="irigasi" value="10" checked> Alami (Tadah Hujan)
+                        </label>
+                        <label class="radio-option" id="labelBerbayar">
+                            <input type="radio" name="irigasi" value="5"> Berbayar (Pompa Air, dll)
+                        </label>
+                    </div>
+                </div>
+            </form>
+
+            <div class="hasil-container" id="hasilZakat">
+                <p>Silakan isi data panen Anda untuk melihat hasil perhitungan zakat.</p>
+            </div>
+        </main>
+    </div>
+
+    <div id="nisabModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeNisab">&times;</span>
+            <h2>Pedoman Nishab Zakat Pertanian</h2>
+            <p>Perhitungan nishab pada kalkulator ini mengacu pada kitab <strong>Fathu al-Qadir fi 'Ajaib al-Maqadir</strong>, karya Mbah Kyai Ma'shum, Kwaron, Diwek, Jombang.</p>
+            <p>Dasar nishab zakat pertanian (*zuru'*) adalah <strong>5 Wasaq</strong>. Dari pedoman tersebut, nishab untuk masing-masing hasil tani adalah:</p>
+            <ul>
+                <li><strong>Beras Putih:</strong> 815,76 kg</li>
+                <li><strong>Padi (Umum):</strong> 1.631,52 kg Gabah Kering</li>
+                <li><strong>Padi Kretek:</strong> 1.323,13 kg Gabah Kering</li>
+                <li><strong>Kacang Hijau:</strong> 780,04 kg</li>
+                <li><strong>Kacang Tunggak:</strong> 756,70 kg</li>
+                <li><strong>Jagung, Gandum, dll:</strong> Menggunakan standar umum 653 kg.</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div id="irrigationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeIrrigation">&times;</span>
+            <h2>Perbedaan Kadar Zakat Pertanian</h2>
+            <p>Besaran zakat pertanian berbeda tergantung pada usaha dan biaya yang dikeluarkan untuk pengairan. Ini mencerminkan keadilan dalam syariat Islam.</p>
+            <br>
+            <h4><strong>Zakat 10% (Pengairan Alami)</strong></h4>
+            <p>Dikenakan jika sumber air didapat secara alami tanpa biaya yang signifikan, seperti:</p>
+            <ul>
+                <li>Air hujan (tadah hujan)</li>
+                <li>Air sungai atau mata air yang mengalir bebas</li>
+            </ul>
+            <p>Kadar zakatnya lebih besar karena <strong>beban biaya yang ditanggung petani lebih ringan.</strong></p>
+            <br>
+            <h4><strong>Zakat 5% (Pengairan Berbayar)</strong></h4>
+            <p>Dikenakan jika petani perlu mengeluarkan biaya untuk mengairi sawahnya, seperti:</p>
+            <ul>
+                <li>Membeli solar untuk pompa air</li>
+                <li>Membayar iuran irigasi</li>
+                <li>Membuat sumur bor</li>
+            </ul>
+            <p>Kadar zakatnya lebih kecil karena <strong>ada biaya operasional yang harus dikeluarkan</strong>, sehingga zakat dihitung dari hasil yang lebih "bersih".</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const nishabData = {
+                padi_umum: 1631.52,
+                beras: 815.76,
+                padi_kretek: 1323.13,
+                jagung_gandum: 653.00,
+                kacang_hijau: 780.04,
+                kacang_tunggak: 756.70
+            };
+
+            // [BARU] Konversi satuan ke KG
+            const conversionFactors = {
+                kg: 1,
+                kuintal: 100,
+                ton: 1000
+            };
+
+            const selectTanaman = document.getElementById('jenisTanaman');
+            const inputPanen = document.getElementById('hasilPanen');
+            const selectSatuan = document.getElementById('satuanBerat'); // [BARU]
+            const radioIrigasi = document.querySelectorAll('input[name="irigasi"]');
+            const nisabValueDisplay = document.getElementById('nisabValue');
+            const hasilContainer = document.getElementById('hasilZakat');
+            
+            // Modal Nishab
+            const nisabModal = document.getElementById('nisabModal');
+            const nisabInfoIcon = document.getElementById('nisabInfoIcon');
+            const closeNisabBtn = document.getElementById('closeNisab');
+            
+            // [BARU] Modal Irigasi
+            const irrigationModal = document.getElementById('irrigationModal');
+            const irrigationInfoIcon = document.getElementById('irrigationInfoIcon');
+            const closeIrrigationBtn = document.getElementById('closeIrrigation');
+
+            const labelTadahHujan = document.getElementById('labelTadahHujan');
+            const labelBerbayar = document.getElementById('labelBerbayar');
+
+            function hitungZakat() {
+                const jenisTanaman = selectTanaman.value;
+                const nishab = nishabData[jenisTanaman];
+                const hasilPanenInput = parseFloat(inputPanen.value) || 0;
+                
+                // [BARU] Logika konversi satuan
+                const satuan = selectSatuan.value;
+                const factor = conversionFactors[satuan];
+                const hasilPanenKg = hasilPanenInput * factor;
+
+                const kadarPersen = parseFloat(document.querySelector('input[name="irigasi"]:checked').value);
+
+                nisabValueDisplay.textContent = `${nishab.toLocaleString('id-ID')} kg`;
+                
+                if (hasilPanenKg >= nishab) {
+                    const jumlahZakat = hasilPanenKg * (kadarPersen / 100);
+                    hasilContainer.className = 'hasil-container wajib';
+                    hasilContainer.innerHTML = `
+                        <h3>Anda Wajib Membayar Zakat</h3>
+                        <p>Hasil panen Anda (${hasilPanenKg.toLocaleString('id-ID')} kg) telah mencapai nishab.</p>
+                        <p>Zakat yang harus dikeluarkan (${kadarPersen}%):</p>
+                        <div class="jumlah-zakat">${jumlahZakat.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg</div>
+                    `;
+                } else {
+                    hasilContainer.className = 'hasil-container tidak-wajib';
+                     hasilContainer.innerHTML = `
+                        <h3>Anda Belum Wajib Zakat</h3>
+                        <p>Hasil panen Anda sebesar <strong>${hasilPanenInput.toLocaleString('id-ID')} ${satuan}</strong> (${hasilPanenKg.toLocaleString('id-ID')} kg) belum mencapai nishab (${nishab.toLocaleString('id-ID')} kg).</p>
+                    `;
+                }
+            }
+
+            // --- Pengelola Modal ---
+            // Modal Nishab
+            nisabInfoIcon.onclick = () => nisabModal.style.display = 'block';
+            closeNisabBtn.onclick = () => nisabModal.style.display = 'none';
+
+            // [BARU] Modal Irigasi
+            irrigationInfoIcon.onclick = () => irrigationModal.style.display = 'block';
+            closeIrrigationBtn.onclick = () => irrigationModal.style.display = 'none';
+            
+            // Tutup modal jika klik di luar area
+            window.onclick = (event) => {
+                if (event.target == nisabModal) nisabModal.style.display = 'none';
+                if (event.target == irrigationModal) irrigationModal.style.display = 'none';
+            };
+            
+            function updateRadioSelection() {
+                radioIrigasi.forEach(radio => {
+                    const label = radio.parentElement;
+                    if(radio.checked) {
+                        label.classList.add('selected');
+                    } else {
+                        label.classList.remove('selected');
+                    }
+                });
+            }
+
+            // --- Event Listeners ---
+            selectTanaman.addEventListener('change', hitungZakat);
+            inputPanen.addEventListener('input', hitungZakat);
+            selectSatuan.addEventListener('change', hitungZakat); // [BARU]
+            radioIrigasi.forEach(radio => radio.addEventListener('change', () => {
+                updateRadioSelection();
+                hitungZakat();
+            }));
+
+            // --- Inisialisasi ---
+            updateRadioSelection();
+            hitungZakat();
+        });
+    </script>
+
+</body>
+</html>
