@@ -136,181 +136,188 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const API_BASE_URL = 'https://api.quran.com/api/v4';
+    // Guard: cegah inisialisasi ganda jika script ke-load dua kali
+    if (window.__QURAN_HOME_INIT) {
+      console.warn('Quran Home already initialized.');
+    } else {
+      window.__QURAN_HOME_INIT = true;
 
-      const surahListContainer = document.getElementById('surah-list');
-      const juzListContainer = document.getElementById('juz-list');
-      const bookmarkListContainer = document.getElementById('bookmark-list');
-      const loader = document.getElementById('loader');
-      const searchInput = document.getElementById('search-input');
+      document.addEventListener('DOMContentLoaded', () => {
+        const API_BASE_URL = 'https://api.quran.com/api/v4';
 
-      let chaptersData = [];
-      let juzsData = [];
+        const surahListContainer = document.getElementById('surah-list');
+        const juzListContainer = document.getElementById('juz-list');
+        const bookmarkListContainer = document.getElementById('bookmark-list');
+        const loader = document.getElementById('loader');
+        const searchInput = document.getElementById('search-input');
 
-      // ==== INIT ====
-      const initializeApp = async () => {
-        try {
-          const [chaptersRes, juzsRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/chapters?language=id`),
-            fetch(`${API_BASE_URL}/juzs`)
-          ]);
+        let chaptersData = [];
+        let juzsData = [];
 
-          if (!chaptersRes.ok || !juzsRes.ok) throw new Error('Network response was not ok');
+        const initializeApp = async () => {
+          try {
+            const [chaptersRes, juzsRes] = await Promise.all([
+              fetch(`${API_BASE_URL}/chapters?language=id`),
+              fetch(`${API_BASE_URL}/juzs`)
+            ]);
 
-          chaptersData = (await chaptersRes.json()).chapters;
-          juzsData = (await juzsRes.json()).juzs;
+            if (!chaptersRes.ok || !juzsRes.ok) throw new Error('Network response was not ok');
 
-          populateSurahList();
-          populateJuzList();
-          loadBookmarks();
+            chaptersData = (await chaptersRes.json()).chapters;
+            const rawJuzs = (await juzsRes.json()).juzs || [];
 
-          loader.style.display = 'none';
-        } catch (err) {
-          loader.textContent = 'Gagal memuat data. Periksa koneksi dan coba refresh.';
-          console.error('Fetch Error:', err);
-        }
-      };
+            // === DEDUP + SORT JUZ ===
+            // Ambil entry unik berdasarkan juz_number (kalau ada duplikat dari API / load ganda)
+            const mapByNum = new Map();
+            rawJuzs.forEach(j => {
+              const n = Number(j.juz_number);
+              if (!mapByNum.has(n)) mapByNum.set(n, j);
+            });
+            juzsData = Array.from(mapByNum.values()).sort((a,b) => Number(a.juz_number) - Number(b.juz_number));
 
-      // ==== BUILDERS ====
-      const populateSurahList = () => {
-        surahListContainer.innerHTML = chaptersData.map(surah => `
-          <a href="quran.html?surah=${surah.id}"
-             class="list-item"
-             title="Buka Surah ${surah.name_simple}"
-             data-searchable="${(surah.name_simple || '').toLowerCase()} ${(surah.translated_name?.name || '').toLowerCase()} ${(surah.name_arabic || '')}">
-            <span class="item-number">${surah.id}</span>
-            <div class="item-content">
-              <div class="item-title">${surah.name_simple}</div>
-              <div class="item-subtitle">${surah.translated_name?.name || ''} • ${surah.verses_count} Ayat</div>
-            </div>
-            <div class="item-arabic">${surah.name_arabic}</div>
-          </a>
-        `).join('');
-      };
+            populateSurahList();
+            populateJuzList();
+            loadBookmarks();
 
-      const populateJuzList = () => {
-        // Ambil surah awal & ayat awal dari verse_mapping untuk setiap juz
-        juzListContainer.innerHTML = juzsData.map(juz => {
-          const firstSurahKey = Object.keys(juz.verse_mapping)[0]; // "1", "2", ...
-          const firstRange = juz.verse_mapping[firstSurahKey];     // "1-7", dst.
+            loader.style.display = 'none';
+          } catch (err) {
+            loader.textContent = 'Gagal memuat data. Periksa koneksi dan coba refresh.';
+            console.error('Fetch Error:', err);
+          }
+        };
+
+        const populateSurahList = () => {
+          surahListContainer.innerHTML = chaptersData.map(surah => `
+            <a href="quran.html?surah=${surah.id}"
+               class="list-item"
+               title="Buka Surah ${surah.name_simple}"
+               data-searchable="${(surah.name_simple || '').toLowerCase()} ${(surah.translated_name?.name || '').toLowerCase()} ${(surah.name_arabic || '')}">
+              <span class="item-number">${surah.id}</span>
+              <div class="item-content">
+                <div class="item-title">${surah.name_simple}</div>
+                <div class="item-subtitle">${surah.translated_name?.name || ''} • ${surah.verses_count} Ayat</div>
+              </div>
+              <div class="item-arabic">${surah.name_arabic}</div>
+            </a>
+          `).join('');
+        };
+
+        // Ambil info awal Juz: pilih surah terkecil dari verse_mapping + ayat awal
+        const getJuzStartInfo = (juz) => {
+          const keys = Object.keys(juz.verse_mapping || {}).map(k => Number(k)).sort((a,b) => a-b);
+          const firstSurahId = keys[0] || 1;
+          const firstRange = juz.verse_mapping?.[firstSurahId] || '1-1';
           const firstAyah = String(firstRange).split('-')[0] || '1';
-          const surahName = chaptersData.find(c => c.id == firstSurahKey)?.name_simple || `Surah ${firstSurahKey}`;
+          const surahName = chaptersData.find(c => Number(c.id) === Number(firstSurahId))?.name_simple || `Surah ${firstSurahId}`;
+          return { firstSurahId, firstAyah, surahName };
+        };
 
-          return `
-            <a href="quran.html?juz=${juz.juz_number}"
-               class="list-item"
-               title="Buka Juz ${juz.juz_number}"
-               data-searchable="juz ${juz.juz_number} juz${juz.juz_number}">
-              <span class="item-number">${juz.juz_number}</span>
-              <div class="item-content">
-                <div class="item-title">Juz ${juz.juz_number}</div>
-                <div class="item-subtitle">Dimulai dari Surah ${surahName} ayat ${firstAyah}</div>
-              </div>
-            </a>
-          `;
-        }).join('');
-      };
+        const populateJuzList = () => {
+          juzListContainer.innerHTML = juzsData.map(juz => {
+            const { surahName, firstAyah } = getJuzStartInfo(juz);
+            const num = Number(juz.juz_number);
+            return `
+              <a href="quran.html?juz=${num}"
+                 class="list-item"
+                 title="Buka Juz ${num}"
+                 data-searchable="juz ${num} juz${num}">
+                <span class="item-number">${num}</span>
+                <div class="item-content">
+                  <div class="item-title">Juz ${num}</div>
+                  <div class="item-subtitle">Dimulai dari Surah ${surahName} ayat ${firstAyah}</div>
+                </div>
+              </a>
+            `;
+          }).join('');
+        };
 
-      const loadBookmarks = () => {
-        const bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
-        if (!bookmarks.length) {
-          bookmarkListContainer.innerHTML = `<div class="empty-state">Bookmark akan muncul di sini.</div>`;
-          return;
-        }
-        bookmarkListContainer.innerHTML = bookmarks.map(bm => {
-          const [surahNum, ayatNum] = String(bm).split(':');
-          const surahInfo = chaptersData.find(c => c.id == surahNum);
-          if (!surahInfo) return '';
-          const searchable = `bookmark surah ${surahInfo.name_simple.toLowerCase()} ${surahInfo.translated_name?.name?.toLowerCase() || ''} ${ayatNum}`;
-          return `
-            <a href="quran.html?surah=${surahNum}#${bm}"
-               class="list-item"
-               title="Buka Surah ${surahInfo.name_simple} Ayat ${ayatNum}"
-               data-searchable="${searchable}">
-              <span class="item-number"><i class="fas fa-star" style="color:#FFC107;"></i></span>
-              <div class="item-content">
-                <div class="item-title">Surah ${surahInfo.name_simple} Ayat ${ayatNum}</div>
-                <div class="item-subtitle">${surahInfo.translated_name?.name || ''}</div>
-              </div>
-            </a>
-          `;
-        }).join('');
-      };
-
-      // ==== TABS ====
-      document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const current = e.currentTarget;
-          if (current.classList.contains('active')) {
-            if (current.dataset.tab === 'bookmark-pane') loadBookmarks(); // refresh jika diklik lagi
+        const loadBookmarks = () => {
+          const bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
+          if (!bookmarks.length) {
+            bookmarkListContainer.innerHTML = `<div class="empty-state">Bookmark akan muncul di sini.</div>`;
             return;
           }
-          document.querySelector('.tab-button.active')?.classList.remove('active');
-          document.querySelector('.tab-pane.active')?.classList.remove('active');
-          current.classList.add('active');
-          document.getElementById(current.dataset.tab).classList.add('active');
+          // Dedup bookmark juga (kalau ada double simpan)
+          const uniq = Array.from(new Set(bookmarks));
+          bookmarkListContainer.innerHTML = uniq.map(bm => {
+            const [surahNum, ayatNum] = String(bm).split(':');
+            const surahInfo = chaptersData.find(c => c.id == surahNum);
+            if (!surahInfo) return '';
+            const searchable = `bookmark surah ${surahInfo.name_simple.toLowerCase()} ${surahInfo.translated_name?.name?.toLowerCase() || ''} ${ayatNum}`;
+            return `
+              <a href="quran.html?surah=${surahNum}#${bm}"
+                 class="list-item"
+                 title="Buka Surah ${surahInfo.name_simple} Ayat ${ayatNum}"
+                 data-searchable="${searchable}">
+                <span class="item-number"><i class="fas fa-star" style="color:#FFC107;"></i></span>
+                <div class="item-content">
+                  <div class="item-title">Surah ${surahInfo.name_simple} Ayat ${ayatNum}</div>
+                  <div class="item-subtitle">${surahInfo.translated_name?.name || ''}</div>
+                </div>
+              </a>
+            `;
+          }).join('');
+        };
 
-          if (current.dataset.tab === 'bookmark-pane') {
-            loadBookmarks();
+        // ==== TABS ====
+        document.querySelectorAll('.tab-button').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const current = e.currentTarget;
+            if (current.classList.contains('active')) {
+              if (current.dataset.tab === 'bookmark-pane') loadBookmarks(); // refresh jika diklik lagi
+              return;
+            }
+            document.querySelector('.tab-button.active')?.classList.remove('active');
+            document.querySelector('.tab-pane.active')?.classList.remove('active');
+            current.classList.add('active');
+            document.getElementById(current.dataset.tab).classList.add('active');
+
+            if (current.dataset.tab === 'bookmark-pane') {
+              loadBookmarks();
+            }
+          });
+        });
+
+        // ==== SEARCH ====
+        const applySearch = (query) => {
+          const pane = document.querySelector('.tab-pane.active');
+          if (!pane) return;
+
+          const items = pane.querySelectorAll('.list-item');
+          if (!items.length) {
+            pane.querySelector('.empty-state')?.remove();
+            return;
           }
 
-          // reset pencarian saat ganti tab (opsional, boleh dihapus)
-          // searchInput.value = '';
-          // applySearch('');
-        });
-      });
+          let anyShown = false;
+          items.forEach(item => {
+            const haystack = (item.dataset.searchable || '').toLowerCase();
+            const show = query === '' || haystack.includes(query);
+            item.style.display = show ? 'flex' : 'none';
+            if (show) anyShown = true;
+          });
 
-      // ==== SEARCH ====
-      const showEmptyStateIfNeeded = (paneEl) => {
-        paneEl.querySelector('.empty-state')?.remove();
-        const visibleItems = [...paneEl.querySelectorAll('.list-item')].filter(el => el.style.display !== 'none');
-        if (visibleItems.length === 0) {
-          const empty = document.createElement('div');
-          empty.className = 'empty-state';
-          empty.textContent = 'Tidak ada hasil untuk pencarian ini.';
-          paneEl.appendChild(empty);
-        }
-      };
-
-      const applySearch = (query) => {
-        const pane = document.querySelector('.tab-pane.active');
-        if (!pane) return;
-
-        const items = pane.querySelectorAll('.list-item');
-        if (!items.length) {
           pane.querySelector('.empty-state')?.remove();
-          return;
-        }
+          if (!anyShown) {
+            const empty = document.createElement('div');
+            empty.className = 'empty-state';
+            empty.textContent = 'Tidak ada hasil untuk pencarian ini.';
+            pane.appendChild(empty);
+          }
+        };
 
-        let anyShown = false;
-        items.forEach(item => {
-          const haystack = (item.dataset.searchable || '').toLowerCase();
-          const show = query === '' || haystack.includes(query);
-          item.style.display = show ? 'flex' : 'none';
-          if (show) anyShown = true;
+        document.getElementById('search-input').addEventListener('input', (e) => {
+          applySearch((e.target.value || '').toLowerCase().trim());
         });
 
-        pane.querySelector('.empty-state')?.remove();
-        if (!anyShown) {
-          const empty = document.createElement('div');
-          empty.className = 'empty-state';
-          empty.textContent = 'Tidak ada hasil untuk pencarian ini.';
-          pane.appendChild(empty);
-        }
-      };
+        // ==== THEME ====
+        const savedTheme = localStorage.getItem('quranTheme') || 'light';
+        document.body.classList.toggle('dark-mode', savedTheme === 'dark');
 
-      searchInput.addEventListener('input', (e) => {
-        applySearch((e.target.value || '').toLowerCase().trim());
+        // GO!
+        initializeApp();
       });
-
-      // ==== THEME (mengikuti preferensi user yang tersimpan dari halaman baca) ====
-      const savedTheme = localStorage.getItem('quranTheme') || 'light';
-      document.body.classList.toggle('dark-mode', savedTheme === 'dark');
-
-      // GO!
-      initializeApp();
-    });
+    }
   </script>
 </body>
 </html>
