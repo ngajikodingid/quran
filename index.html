@@ -83,7 +83,7 @@
 
         const populateSurahList = () => {
             surahListContainer.innerHTML = chaptersData.map(surah => `
-                <a href="detail.html?surah=${surah.id}" class="list-item" data-searchable="${surah.name_simple.toLowerCase()} ${surah.translated_name.name.toLowerCase()}">
+                <a href="quran.html?surah=${surah.id}" class="list-item" data-searchable="${surah.name_simple.toLowerCase()} ${surah.translated_name.name.toLowerCase()}">
                     <span class="item-number">${surah.id}</span>
                     <div class="item-content"><div class="item-title">${surah.name_simple}</div><div class="item-subtitle">${surah.translated_name.name} • ${surah.verses_count} Ayat</div></div>
                     <div class="item-arabic">${surah.name_arabic}</div></a>`).join('');
@@ -95,7 +95,7 @@
                 const firstVerseNum = juz.verse_mapping[firstVerseKey].split('-')[0];
                 const surahName = chaptersData.find(c => c.id == firstVerseKey)?.name_simple || '';
                 return `
-                    <a href="detail.html?juz=${juz.juz_number}" class="list-item" data-searchable="juz ${juz.juz_number}">
+                    <a href="quran.html?juz=${juz.juz_number}" class="list-item" data-searchable="juz ${juz.juz_number}">
                         <span class="item-number">${juz.juz_number}</span>
                         <div class="item-content"><div class="item-title">Juz ${juz.juz_number}</div><div class="item-subtitle">Dimulai dari Surah ${surahName} ayat ${firstVerseNum}</div></div>
                     </a>`;
@@ -111,7 +111,7 @@
                     const [surahNum, ayatNum] = bm.split(':');
                     const surahInfo = chaptersData.find(c => c.id == surahNum);
                     if (!surahInfo) return '';
-                    return `<a href="detail.html?surah=${surahNum}#${bm}" class="list-item">
+                    return `<a href="quran.html?surah=${surahNum}#${bm}" class="list-item">
                         <span class="item-number"><i class="fas fa-star" style="color:#FFC107;"></i></span>
                         <div class="item-content"><div class="item-title">Surah ${surahInfo.name_simple} Ayat ${ayatNum}</div></div>
                     </a>`;
