@@ -1,389 +1,554 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baca Al-Qur'an - Mushaf Digital</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Amiri+Quran&family=Noto+Sans&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        :root {
-            --primary-color: #2E7D32; --background-color: #F8F9FA; --surface-color: #FFFFFF;
-            --text-color: #212529; --subtle-text-color: #6c757d; --border-color: #E9ECEF;
-            --font-latin: 'Poppins', 'Noto Sans', sans-serif; --font-arabic: 'Amiri Quran', serif;
-            --shadow-color: rgba(0, 0, 0, 0.08);
-        }
-        body.dark-mode {
-            --primary-color: #66bb6a; --background-color: #121212; --surface-color: #1e1e1e;
-            --text-color: #e0e0e0; --subtle-text-color: #9e9e9e; --border-color: #333333;
-            --shadow-color: rgba(0, 0, 0, 0.2);
-        }
-        html { scroll-behavior: smooth; }
-        body { font-family: var(--font-latin); background-color: var(--background-color); color: var(--text-color); margin: 0; padding: 15px; transition: background-color 0.3s, color 0.3s; }
-        .container { max-width: 800px; margin: 0 auto; background-color: var(--surface-color); border-radius: 16px; box-shadow: 0 8px 30px var(--shadow-color); overflow: hidden; transition: background-color 0.3s; }
-        .sticky-bar { position: sticky; background-color: color-mix(in srgb, var(--surface-color) 95%, transparent); backdrop-filter: blur(8px); z-index: 10; padding: 15px 20px; transition: background-color 0.3s, border-color 0.3s; }
-        .page-header { top: 0; border-bottom: 1px solid var(--border-color); }
-        .page-footer { bottom: 0; border-top: 1px solid var(--border-color); }
-        .header-top { display: flex; align-items: center; justify-content: space-between; }
-        .header-info { display: flex; align-items: center; }
-        .back-button { margin-right: 15px; font-size: 20px; color: var(--text-color); text-decoration: none; }
-        #view-title { font-size: 18px; font-weight: 600; color: var(--primary-color); }
-        #surah-info-header { font-size: 14px; color: var(--subtle-text-color); text-transform: capitalize; }
-        .header-actions { display: flex; align-items: center; gap: 15px; }
-        .header-actions button { background: none; border: none; font-size: 18px; color: var(--subtle-text-color); cursor: pointer; padding: 5px; }
-        .header-actions button.active { color: var(--primary-color); }
-        #loader { text-align: center; padding: 80px 0; }
-        .spinner { border: 4px solid rgba(128,128,128,0.2); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--primary-color); margin: 0 auto 15px; animation: spin 1s ease infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .content { padding: 0 10px 20px 10px; }
-        .surah-separator { text-align: center; padding: 30px 20px; margin: 20px 10px; }
-        .surah-separator .surah-title-prefix { font-family: var(--font-arabic); font-size: 24px; color: var(--primary-color); }
-        .surah-separator .arabic-name { font-family: var(--font-arabic); font-size: 36px; color: var(--primary-color); margin-top: -15px; }
-        .surah-separator .latin-name { font-size: 24px; font-weight: 600; margin: 5px 0; }
-        .surah-separator .details { font-size: 14px; color: var(--subtle-text-color); text-transform: uppercase; }
-        .bismillah-header { font-family: var(--font-arabic); text-align: center; font-size: 24px; padding: 25px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); margin: 20px 0; }
-        .verse-item { padding: 25px 0; border-bottom: 1px solid var(--border-color); position: relative; } .verse-item:last-child { border-bottom: none; }
-        .verse-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .verse-number-wrapper { width: 40px; height: 40px; background-image: url('https://i.ibb.co/pzp553V/ayat-bg-islamic-style-frame-1.png'); background-size: contain; background-repeat: no-repeat; display: flex; align-items: center; justify-content: center; font-family: var(--font-arabic); font-size: 16px; color: var(--primary-color); }
-        .arabic-text { font-family: var(--font-arabic); text-align: right; direction: rtl; margin-bottom: 16px; transition: font-size 0.3s, line-height 0.3s; }
-        .font-size-small { --arabic-font-size: 26px; --arabic-line-height: 2.0; }
-        .font-size-medium { --arabic-font-size: 30px; --arabic-line-height: 2.2; }
-        .font-size-large { --arabic-font-size: 34px; --arabic-line-height: 2.4; }
-        .font-size-xl { --arabic-font-size: 38px; --arabic-line-height: 2.6; }
-        .arabic-text { font-size: var(--arabic-font-size); line-height: var(--arabic-line-height); }
-        .translation-text { font-size: 15px; line-height: 1.7; color: var(--subtle-text-color); margin-top: 20px; padding-left: 55px; } .translation-text.hidden { display: none; }
-        .verse-menu-button { background: none; border: none; font-size: 18px; color: #aaa; cursor: pointer; padding: 10px; position: absolute; top: 15px; left: 0; }
-        .verse-menu-popup { display: none; position: absolute; background-color: var(--surface-color); border-radius: 8px; box-shadow: 0 4px 15px var(--shadow-color); z-index: 20; border: 1px solid var(--border-color); overflow: hidden; }
-        .verse-menu-popup a { display: flex; align-items: center; padding: 12px 18px; text-decoration: none; color: var(--text-color); font-size: 14px; white-space: nowrap; }
-        .verse-menu-popup a i { margin-right: 12px; width: 16px; text-align: center; color: var(--subtle-text-color); }
-        .verse-menu-popup a:hover { background-color: var(--background-color); }
-        .modal { position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; } .modal.active { display: flex; }
-        .modal-content { background-color: var(--surface-color); padding: 0; border-radius: 12px; width: 90%; max-width: 600px; position: relative; animation: slide-down 0.3s ease-out; display: flex; flex-direction: column; max-height: 80vh; }
-        @keyframes slide-down { from { transform: translateY(-30px); } to { transform: translateY(0); } }
-        .modal-header { padding: 15px 25px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h3 { margin: 0; font-size: 18px; }
-        .modal-body { padding: 25px; overflow-y: auto; }
-        .modal-close { font-size: 28px; cursor: pointer; color: #aaa; }
-        #tafsir-select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--background-color); color: var(--text-color); }
-        .tafsir-content.arabic { font-family: var(--font-arabic); direction: rtl; text-align: right; font-size: 18px; line-height: 1.8; }
-        #theme-toggle .fa-moon { display: none; }
-        body.dark-mode #theme-toggle .fa-moon { display: inline; }
-        body.dark-mode #theme-toggle .fa-sun { display: none; }
-        .page-navigation { display: flex; justify-content: space-between; align-items: center; }
-        .nav-button { background: none; border: none; font-size: 24px; color: var(--text-color); cursor: pointer; padding: 10px; }
-        .nav-button:disabled { color: var(--border-color); cursor: not-allowed; }
-        .page-number-display { font-size: 14px; color: var(--subtle-text-color); font-weight: 500; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Baca Al-Qur'an - Mushaf Digital</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Amiri+Quran&family=Noto+Sans&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
+  <style>
+    :root{
+      --primary-color:#2E7D32; --background-color:#F8F9FA; --surface-color:#FFFFFF;
+      --text-color:#212529; --subtle-text-color:#6c757d; --border-color:#E9ECEF;
+      --font-latin:'Poppins','Noto Sans',sans-serif; --font-arabic:'Amiri Quran',serif;
+      --shadow-color:rgba(0,0,0,.08);
+    }
+    body.dark-mode{
+      --primary-color:#66bb6a; --background-color:#121212; --surface-color:#1e1e1e;
+      --text-color:#e0e0e0; --subtle-text-color:#9e9e9e; --border-color:#333333;
+      --shadow-color:rgba(0,0,0,.2);
+    }
+
+    html{ scroll-behavior:smooth; }
+    body{
+      font-family:var(--font-latin);
+      background-color:var(--background-color);
+      color:var(--text-color);
+      margin:0; padding:15px;
+      transition:background-color .3s,color .3s;
+    }
+
+    .container{
+      max-width:800px; margin:0 auto;
+      background-color:var(--surface-color);
+      border-radius:16px;
+      box-shadow:0 8px 30px var(--shadow-color);
+      overflow:hidden; transition:background-color .3s;
+    }
+
+    .sticky-bar{
+      position:sticky; z-index:10; padding:15px 20px;
+      backdrop-filter:blur(8px);
+      transition:background-color .3s, border-color .3s;
+      background-color:var(--surface-color); /* fallback */
+    }
+    /* gunakan color-mix jika tersedia */
+    @supports (background-color: color-mix(in srgb, #000, #fff)){
+      .sticky-bar{
+        background-color: color-mix(in srgb, var(--surface-color) 95%, transparent);
+      }
+    }
+
+    .page-header{ top:0; border-bottom:1px solid var(--border-color); }
+    .page-footer{ bottom:0; border-top:1px solid var(--border-color); }
+
+    .header-top{ display:flex; align-items:center; justify-content:space-between; }
+    .header-info{ display:flex; align-items:center; }
+    .back-button{ margin-right:15px; font-size:20px; color:var(--text-color); text-decoration:none; }
+    #view-title{ font-size:18px; font-weight:600; color:var(--primary-color); }
+    #surah-info-header{ font-size:14px; color:var(--subtle-text-color); text-transform:capitalize; }
+
+    .header-actions{ display:flex; align-items:center; gap:15px; }
+    .header-actions button{ background:none; border:none; font-size:18px; color:var(--subtle-text-color); cursor:pointer; padding:5px; }
+    .header-actions button.active{ color:var(--primary-color); }
+
+    #loader{ text-align:center; padding:80px 0; }
+    .spinner{ border:4px solid rgba(128,128,128,.2); width:36px; height:36px; border-radius:50%; border-left-color:var(--primary-color); margin:0 auto 15px; animation:spin 1s ease infinite; }
+    @keyframes spin{ 100%{ transform:rotate(360deg); } }
+
+    /* beri ruang ekstra supaya tidak ketiban sticky footer */
+    .content{ padding:0 10px 80px 10px; }
+
+    .surah-separator{ text-align:center; padding:30px 20px; margin:20px 10px; }
+    .surah-separator .surah-title-prefix{ font-family:var(--font-arabic); font-size:24px; color:var(--primary-color); }
+    .surah-separator .arabic-name{ font-family:var(--font-arabic); font-size:36px; color:var(--primary-color); margin-top:-15px; }
+    .surah-separator .latin-name{ font-size:24px; font-weight:600; margin:5px 0; }
+    .surah-separator .details{ font-size:14px; color:var(--subtle-text-color); text-transform:uppercase; }
+
+    .bismillah-header{
+      font-family:var(--font-arabic); text-align:center; font-size:24px; padding:25px 0;
+      border-top:1px solid var(--border-color); border-bottom:1px solid var(--border-color); margin:20px 0;
+    }
+
+    .verse-item{ padding:25px 0; border-bottom:1px solid var(--border-color); position:relative; }
+    .verse-item:last-child{ border-bottom:none; }
+
+    .verse-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+    .verse-number-wrapper{
+      width:40px; height:40px;
+      background-image:url('https://i.ibb.co/pzp553V/ayat-bg-islamic-style-frame-1.png');
+      background-size:contain; background-repeat:no-repeat;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-arabic); font-size:16px; color:var(--primary-color);
+    }
+
+    .arabic-text{
+      font-family:var(--font-arabic); text-align:right; direction:rtl; margin-bottom:16px;
+      transition:font-size .3s, line-height .3s;
+    }
+
+    .font-size-small{ --arabic-font-size:26px; --arabic-line-height:2.0; }
+    .font-size-medium{ --arabic-font-size:30px; --arabic-line-height:2.2; }
+    .font-size-large{ --arabic-font-size:34px; --arabic-line-height:2.4; }
+    .font-size-xl{ --arabic-font-size:38px; --arabic-line-height:2.6; }
+    .arabic-text{ font-size:var(--arabic-font-size); line-height:var(--arabic-line-height); }
+
+    .translation-text{ font-size:15px; line-height:1.7; color:var(--subtle-text-color); margin-top:20px; padding-left:55px; }
+    .translation-text.hidden{ display:none; }
+
+    .verse-menu-button{
+      background:none; border:none; font-size:18px; color:#aaa; cursor:pointer; padding:10px;
+      position:absolute; top:15px; left:0;
+    }
+
+    /* Popup menu: gunakan fixed agar akurat saat scroll */
+    .verse-menu-popup{
+      display:none; position:fixed; z-index:200;
+      background-color:var(--surface-color);
+      border-radius:8px; box-shadow:0 4px 15px var(--shadow-color);
+      border:1px solid var(--border-color); overflow:hidden; min-width:180px;
+    }
+    .verse-menu-popup a{
+      display:flex; align-items:center; padding:12px 18px;
+      text-decoration:none; color:var(--text-color); font-size:14px; white-space:nowrap;
+    }
+    .verse-menu-popup a i{ margin-right:12px; width:16px; text-align:center; color:var(--subtle-text-color); }
+    .verse-menu-popup a:hover{ background-color:var(--background-color); }
+
+    /* Modal */
+    .modal{ position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; }
+    .modal.active{ display:flex; }
+    .modal-content{ background-color:var(--surface-color); padding:0; border-radius:12px; width:90%; max-width:600px; position:relative; animation:slide-down .3s ease-out; display:flex; flex-direction:column; max-height:80vh; }
+    @keyframes slide-down{ from{ transform:translateY(-30px); } to{ transform:translateY(0); } }
+    .modal-header{ padding:15px 25px; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; }
+    .modal-header h3{ margin:0; font-size:18px; }
+    .modal-body{ padding:25px; overflow-y:auto; }
+    .modal-close{ font-size:28px; cursor:pointer; color:#aaa; }
+    #tafsir-select{ width:100%; padding:10px; margin-bottom:15px; border:1px solid var(--border-color); border-radius:8px; background-color:var(--background-color); color:var(--text-color); }
+    .tafsir-content.arabic{ font-family:var(--font-arabic); direction:rtl; text-align:right; font-size:18px; line-height:1.8; }
+
+    /* Footer nav */
+    .page-navigation{ display:flex; justify-content:space-between; align-items:center; }
+    .nav-button{ background:none; border:none; font-size:24px; color:var(--text-color); cursor:pointer; padding:10px; }
+    .nav-button:disabled{ color:var(--border-color); cursor:not-allowed; }
+    .page-number-display{ font-size:14px; color:var(--subtle-text-color); font-weight:500; }
+
+    #theme-toggle .fa-moon{ display:none; }
+    body.dark-mode #theme-toggle .fa-moon{ display:inline; }
+    body.dark-mode #theme-toggle .fa-sun{ display:none; }
+  </style>
 </head>
 <body class="font-size-medium">
-<div class="container">
+  <div class="container">
     <header class="page-header sticky-bar">
-        <div class="header-top">
-            <div class="header-info">
-                <a href="home.html" class="back-button"><i class="fas fa-arrow-left"></i></a>
-                <div>
-                    <h1 id="view-title">Memuat...</h1>
-                    <div id="surah-info-header"></div>
-                </div>
-            </div>
-            <div class="header-actions">
-                <button id="toggle-translation" class="active" title="Tampilkan/Sembunyikan Terjemahan"><i class="fas fa-language"></i></button>
-                <button id="font-size-toggle" title="Ubah Ukuran Font"><i class="fas fa-font"></i></button>
-                <button id="theme-toggle" title="Ubah Tema"><i class="fas fa-sun"></i><i class="fas fa-moon"></i></button>
-            </div>
+      <div class="header-top">
+        <div class="header-info">
+          <a href="home.html" class="back-button"><i class="fas fa-arrow-left"></i></a>
+          <div>
+            <h1 id="view-title">Memuat...</h1>
+            <div id="surah-info-header"></div>
+          </div>
         </div>
+        <div class="header-actions">
+          <button id="toggle-translation" class="active" title="Tampilkan/Sembunyikan Terjemahan"><i class="fas fa-language"></i></button>
+          <button id="font-size-toggle" title="Ubah Ukuran Font"><i class="fas fa-font"></i></button>
+          <button id="theme-toggle" title="Ubah Tema"><i class="fas fa-sun"></i><i class="fas fa-moon"></i></button>
+        </div>
+      </div>
     </header>
+
     <main>
-        <div id="loader"><div class="spinner"></div><span>Memuat data halaman...</span></div>
-        <div class="content" id="verse-container" style="display: none;"></div>
+      <div id="loader"><div class="spinner"></div><span>Memuat data halaman...</span></div>
+      <div class="content" id="verse-container" style="display:none;"></div>
     </main>
+
     <footer class="page-footer sticky-bar">
-        <div class="page-navigation">
-            <button id="prev-page-btn" class="nav-button"><i class="fas fa-chevron-left"></i></button>
-            <span id="page-number-display">Halaman 1</span>
-            <button id="next-page-btn" class="nav-button"><i class="fas fa-chevron-right"></i></button>
-        </div>
+      <div class="page-navigation">
+        <!-- Kiri = Previous, Kanan = Next (sesuai mushaf) -->
+        <button id="prev-page-btn" class="nav-button" title="Halaman Sebelumnya"><i class="fas fa-chevron-left"></i></button>
+        <span id="page-number-display" class="page-number-display">Halaman 1</span>
+        <button id="next-page-btn" class="nav-button" title="Halaman Berikutnya"><i class="fas fa-chevron-right"></i></button>
+      </div>
     </footer>
-</div>
-<div id="tafsir-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3 id="tafsir-title"></h3>
-            <span class="modal-close">&times;</span>
-        </div>
-        <div class="modal-body">
-            <select id="tafsir-select"></select>
-            <div id="tafsir-content" class="tafsir-content"></div>
-        </div>
+  </div>
+
+  <!-- Modal Tafsir -->
+  <div id="tafsir-modal" class="modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="tafsir-title">
+      <div class="modal-header">
+        <h3 id="tafsir-title"></h3>
+        <span class="modal-close" role="button" aria-label="Tutup">&times;</span>
+      </div>
+      <div class="modal-body">
+        <select id="tafsir-select"></select>
+        <div id="tafsir-content" class="tafsir-content"></div>
+      </div>
     </div>
-</div>
-<div class="verse-menu-popup" id="verse-menu">
+  </div>
+
+  <!-- Popup menu ayat -->
+  <div class="verse-menu-popup" id="verse-menu">
     <a href="#" id="menu-play-audio"><i class="fas fa-play"></i> Putar Ayat</a>
     <a href="#" id="menu-show-tafsir"><i class="fas fa-book-open"></i> Lihat Tafsir</a>
     <a href="#" id="menu-bookmark"><i class="far fa-star"></i> Simpan ke Bookmark</a>
-</div>
+  </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const QURAN_API_URL = 'https://api.quran.com/api/v4';
-    const body = document.body;
-    const viewTitle = document.getElementById('view-title');
-    const surahInfoHeader = document.getElementById('surah-info-header');
-    const verseContainer = document.getElementById('verse-container');
-    const loader = document.getElementById('loader');
-    const translationBtn = document.getElementById('toggle-translation');
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    const fontSizeBtn = document.getElementById('font-size-toggle');
-    const modal = document.getElementById('tafsir-modal');
-    const verseMenu = document.getElementById('verse-menu');
-    const prevPageBtn = document.getElementById('prev-page-btn');
-    const nextPageBtn = document.getElementById('next-page-btn');
-    const pageNumberDisplay = document.getElementById('page-number-display');
-    
-    let currentPage = 1;
-    let chaptersData = null;
-    let pageDataCache = {};
-    let currentAudio = null;
-    let bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
-    const fontSizes = ['medium', 'large', 'xl', 'small'];
-    let currentSizeIndex = 0;
-    
-    const availableTafsirs = [
-        { id: 167, name: 'Kemenag (Ringkas)', lang: 'id' }, { id: 168, name: 'Kemenag (Lengkap)', lang: 'id' },
-        { id: 161, name: 'Al-Jalalayn', lang: 'ar' }, { id: 16,  name: 'Al-Muyassar', lang: 'ar' },
-        { id: 91,  name: 'As-Sa\'di', lang: 'ar' }, { id: 14,  name: 'Ibn Kathir', lang: 'ar' },
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const QURAN_API_URL = 'https://api.quran.com/api/v4';
+
+      const body = document.body;
+      const viewTitle = document.getElementById('view-title');
+      const surahInfoHeader = document.getElementById('surah-info-header');
+      const verseContainer = document.getElementById('verse-container');
+      const loader = document.getElementById('loader');
+      const translationBtn = document.getElementById('toggle-translation');
+      const themeToggleBtn = document.getElementById('theme-toggle');
+      const fontSizeBtn = document.getElementById('font-size-toggle');
+      const modal = document.getElementById('tafsir-modal');
+      const verseMenu = document.getElementById('verse-menu');
+      const prevPageBtn = document.getElementById('prev-page-btn');
+      const nextPageBtn = document.getElementById('next-page-btn');
+      const pageNumberDisplay = document.getElementById('page-number-display');
+
+      let currentPage = 1;
+      let chaptersData = null;
+      let pageDataCache = {};
+      let currentAudio = null;
+      let bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
+      const fontSizes = ['medium', 'large', 'xl', 'small'];
+      let currentSizeIndex = 0;
+
+      // Tafsir yang tersedia (id sesuai API v4)
+      const availableTafsirs = [
+        { id: 167, name: 'Kemenag (Ringkas)', lang: 'id' },
+        { id: 168, name: 'Kemenag (Lengkap)', lang: 'id' },
+        { id: 161, name: 'Al-Jalalayn', lang: 'ar' },
+        { id: 16,  name: 'Al-Muyassar', lang: 'ar' },
+        { id: 91,  name: 'As-Sa\'di', lang: 'ar' },
+        { id: 14,  name: 'Ibn Kathir', lang: 'ar' },
         { id: 15,  name: 'At-Tabari', lang: 'ar' },
-    ];
-    const allTafsirIds = availableTafsirs.map(t => t.id).join(',');
+      ];
+      const allTafsirIds = availableTafsirs.map(t => t.id).join(',');
 
-    const getUrlParameter = (name) => new URL(window.location.href).searchParams.get(name);
+      const getUrlParameter = (name) => new URL(window.location.href).searchParams.get(name);
 
-    const fetchAndDisplayPage = async (pageNumber, keepPosition = false) => {
+      // Helper: safe absolute URL untuk audio
+      const toAbsoluteUrl = (u) => /^https?:\/\//i.test(u) ? u : `https://verses.quran.com/${String(u||'').replace(/^\/+/, '')}`;
+
+      const fetchAndDisplayPage = async (pageNumber, keepPosition = false) => {
         if (!pageNumber || pageNumber < 1 || pageNumber > 604) return;
         currentPage = parseInt(pageNumber);
         verseContainer.style.display = 'none';
         loader.style.display = 'block';
-        if (!keepPosition) {
-            if (location.hash) { history.pushState("", document.title, window.location.pathname + window.location.search); }
-            window.scrollTo(0, 0);
-        }
-        if (pageDataCache[currentPage]) {
-            displayPageContent(pageDataCache[currentPage]);
-            return;
-        }
-        const params = new URLSearchParams({ language: 'id', translations: 33, tafsirs: allTafsirIds, audio: 7, fields: 'text_uthmani' });
-        try {
-            const response = await fetch(`${QURAN_API_URL}/verses/by_page/${currentPage}?${params}`);
-            if (!response.ok) throw new Error(`Network response error: ${response.status}`);
-            const data = await response.json();
-            pageDataCache[currentPage] = data.verses;
-            displayPageContent(data.verses);
-        } catch (error) {
-            verseContainer.innerHTML = `<p style='text-align:center;'>Gagal memuat halaman. Coba refresh.</p>`;
-        } finally {
-            verseContainer.style.display = 'block';
-            loader.style.display = 'none';
-        }
-    };
 
-    const displayPageContent = (verses) => {
+        if (!keepPosition) {
+          if (location.hash) {
+            history.pushState("", document.title, window.location.pathname + window.location.search);
+          }
+          window.scrollTo(0, 0);
+        }
+
+        if (pageDataCache[currentPage]) {
+          displayPageContent(pageDataCache[currentPage]);
+          verseContainer.style.display = 'block';
+          loader.style.display = 'none';
+          return;
+        }
+
+        const params = new URLSearchParams({
+          language: 'id',
+          translations: 33,             // Kemenag
+          tafsirs: allTafsirIds,        // ambil tafsir inline jika tersedia
+          audio: 7,                     // recitation id
+          fields: 'text_uthmani'
+        });
+
+        try {
+          const response = await fetch(`${QURAN_API_URL}/verses/by_page/${currentPage}?${params}`);
+          if (!response.ok) throw new Error(`Network response error: ${response.status}`);
+          const data = await response.json();
+          pageDataCache[currentPage] = data.verses;
+          displayPageContent(data.verses);
+        } catch (error) {
+          verseContainer.innerHTML = `<p style='text-align:center;'>Gagal memuat halaman. Coba refresh.</p>`;
+        } finally {
+          verseContainer.style.display = 'block';
+          loader.style.display = 'none';
+        }
+      };
+
+      const displayPageContent = (verses) => {
         if (!verses || !verses.length) return;
         verseContainer.innerHTML = '';
+
         let lastSurahId = null;
         const firstVerseOnPage = verses[0];
         const primarySurahId = firstVerseOnPage.chapter_id;
         const primarySurahInfo = chaptersData.find(c => c.id === primarySurahId);
 
         if (primarySurahInfo) {
-            viewTitle.textContent = primarySurahInfo.name_simple;
-            surahInfoHeader.textContent = `${primarySurahInfo.revelation_place} • ${primarySurahInfo.verses_count} AYAT`;
+          viewTitle.textContent = primarySurahInfo.name_simple;
+          surahInfoHeader.textContent = `${primarySurahInfo.revelation_place} • ${primarySurahInfo.verses_count} AYAT`;
         }
-        
+
         verses.forEach(verse => {
-            if (verse.chapter_id !== lastSurahId) {
-                const surahInfo = chaptersData.find(c => c.id === verse.chapter_id);
-                if (surahInfo) {
-                    verseContainer.innerHTML += displaySurahHeader(surahInfo);
-                    if (surahInfo.bismillah_pre) {
-                         verseContainer.innerHTML += `<div class="bismillah-header">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>`;
-                    }
-                }
-                lastSurahId = verse.chapter_id;
+          if (verse.chapter_id !== lastSurahId) {
+            const surahInfo = chaptersData.find(c => c.id === verse.chapter_id);
+            if (surahInfo) {
+              verseContainer.innerHTML += displaySurahHeader(surahInfo);
+              if (surahInfo.bismillah_pre) {
+                verseContainer.innerHTML += `<div class="bismillah-header">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>`;
+              }
             }
-            const verseNumberArabic = new Intl.NumberFormat('ar-EG').format(verse.verse_number);
-            verseContainer.innerHTML += `
-                <div class="verse-item" id="${verse.verse_key}">
-                    <button class="verse-menu-button" data-verse-key="${verse.verse_key}"><i class="fas fa-ellipsis-v"></i></button>
-                    <div class="verse-header"><div></div><div class="verse-number-wrapper">${verseNumberArabic}</div></div>
-                    <p class="arabic-text">${verse.text_uthmani}</p>
-                    <p class="translation-text">${verse.translations[0].text.replace(/<[^>]*>/g, '')}</p>
-                </div>`;
+            lastSurahId = verse.chapter_id;
+          }
+
+          const verseNumberArabic = new Intl.NumberFormat('ar-EG').format(verse.verse_number);
+          verseContainer.innerHTML += `
+            <div class="verse-item" id="${verse.verse_key}">
+              <button class="verse-menu-button" data-verse-key="${verse.verse_key}">
+                <i class="fas fa-ellipsis-vertical"></i>
+              </button>
+              <div class="verse-header">
+                <div></div>
+                <div class="verse-number-wrapper">${verseNumberArabic}</div>
+              </div>
+              <p class="arabic-text">${verse.text_uthmani}</p>
+              <p class="translation-text">${
+                (verse.translations?.[0]?.text || '').replace(/<[^>]*>/g, '')
+              }</p>
+            </div>`;
         });
+
         attachActionListeners();
         setInitialTranslationVisibility();
+
         pageNumberDisplay.textContent = `Halaman ${currentPage}`;
         prevPageBtn.disabled = currentPage <= 1;
         nextPageBtn.disabled = currentPage >= 604;
+
         const hash = window.location.hash.substring(1);
         if (hash) document.getElementById(hash)?.scrollIntoView();
-    };
+      };
 
-    const displaySurahHeader = (surahInfo) => {
-        return `<div class="surah-separator">
-                    <div class="surah-title-prefix">سُوْرَةُ</div>
-                    <div class="arabic-name">${surahInfo.name_arabic}</div>
-                    <div class="latin-name">${surahInfo.name_simple}</div>
-                    <div class="details">${surahInfo.revelation_place} • ${surahInfo.verses_count} AYAT</div>
-                </div>`;
-    };
-    
-    const attachActionListeners = () => {
+      const displaySurahHeader = (surahInfo) => {
+        return `
+          <div class="surah-separator">
+            <div class="surah-title-prefix">سُوْرَةُ</div>
+            <div class="arabic-name">${surahInfo.name_arabic}</div>
+            <div class="latin-name">${surahInfo.name_simple}</div>
+            <div class="details">${surahInfo.revelation_place} • ${surahInfo.verses_count} AYAT</div>
+          </div>`;
+      };
+
+      const attachActionListeners = () => {
         document.querySelectorAll('.verse-menu-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openVerseMenu(e.currentTarget, e.currentTarget.dataset.verseKey);
-            });
+          button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openVerseMenu(e.currentTarget, e.currentTarget.dataset.verseKey);
+          });
         });
-    };
-    
-    const openVerseMenu = (button, verseKey) => {
-        const verse = pageDataCache[currentPage].find(v => v.verse_key === verseKey);
+      };
+
+      // Posisi popup: fixed, hitung dari rect viewport, auto-kiri bila mentok kanan
+      const openVerseMenu = (button, verseKey) => {
+        const verse = pageDataCache[currentPage]?.find(v => v.verse_key === verseKey);
         if (!verse) return;
-        document.getElementById('menu-play-audio').onclick = (e) => { e.preventDefault(); handleAudio(verse.audio.url); verseMenu.style.display = 'none'; };
-        document.getElementById('menu-show-tafsir').onclick = (e) => { e.preventDefault(); openTafsirModal(verse); verseMenu.style.display = 'none'; };
+
+        document.getElementById('menu-play-audio').onclick = (e) => {
+          e.preventDefault();
+          handleAudio(verse.audio?.url);
+          verseMenu.style.display = 'none';
+        };
+        document.getElementById('menu-show-tafsir').onclick = (e) => {
+          e.preventDefault();
+          openTafsirModal(verse);
+          verseMenu.style.display = 'none';
+        };
         const bookmarkLink = document.getElementById('menu-bookmark');
         const isBookmarked = bookmarks.includes(verseKey);
-        bookmarkLink.innerHTML = isBookmarked ? `<i class="fas fa-star"></i> Hapus Bookmark` : `<i class="far fa-star"></i> Simpan Bookmark`;
+        bookmarkLink.innerHTML = isBookmarked
+          ? `<i class="fas fa-star"></i> Hapus Bookmark`
+          : `<i class="far fa-star"></i> Simpan Bookmark`;
         bookmarkLink.onclick = (e) => { e.preventDefault(); toggleBookmark(verseKey); verseMenu.style.display = 'none'; };
+
         const rect = button.getBoundingClientRect();
         verseMenu.style.display = 'block';
-        verseMenu.style.top = `${button.offsetTop + rect.height}px`;
-        if ((rect.left + verseMenu.offsetWidth) > window.innerWidth - 15) {
-            verseMenu.style.left = 'auto';
-            verseMenu.style.right = `${window.innerWidth - (rect.left + rect.width)}px`;
-        } else {
-            verseMenu.style.left = `${button.offsetLeft}px`;
-            verseMenu.style.right = 'auto';
-        }
-    };
 
-    const handleAudio = (audioUrl) => {
+        requestAnimationFrame(() => {
+          const menuW = verseMenu.offsetWidth || 200;
+          const gap = 12;
+          let left = rect.left;
+          const overRight = (left + menuW) > (window.innerWidth - gap);
+          if (overRight) left = rect.right - menuW;                  // buka ke kiri
+          left = Math.max(gap, Math.min(left, window.innerWidth - menuW - gap));
+
+          // jaga-jaga tinggi popup melebihi viewport bawah
+          const menuH = verseMenu.offsetHeight || 120;
+          let top = rect.bottom + 2;
+          if (top + menuH + gap > window.innerHeight) {
+            top = Math.max(gap, window.innerHeight - menuH - gap);
+          }
+
+          verseMenu.style.left = `${left}px`;
+          verseMenu.style.top  = `${top}px`;
+          verseMenu.style.right = 'auto';
+        });
+      };
+
+      const handleAudio = (audioUrl) => {
         if (!audioUrl) return;
-        const fullUrl = `https://verses.quran.com/${audioUrl}`;
+        const fullUrl = toAbsoluteUrl(audioUrl);
         if (currentAudio && !currentAudio.paused) {
-            currentAudio.pause();
-            if (currentAudio.src === fullUrl) { currentAudio = null; return; }
+          currentAudio.pause();
+          if (currentAudio.src === fullUrl) { currentAudio = null; return; }
         }
         currentAudio = new Audio(fullUrl);
-        currentAudio.play();
+        currentAudio.play().catch(() => { /* diamkan jika butuh user gesture */ });
         currentAudio.onended = () => { currentAudio = null; };
-    };
+      };
 
-    const openTafsirModal = (verse) => {
+      const openTafsirModal = (verse) => {
         const surahName = chaptersData.find(c => c.id == verse.chapter_id)?.name_simple || '';
         const modalTitle = modal.querySelector('#tafsir-title');
         const tafsirSelect = modal.querySelector('#tafsir-select');
+
         modalTitle.textContent = `Tafsir ${surahName} Ayat ${verse.verse_number}`;
         tafsirSelect.innerHTML = availableTafsirs.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
         tafsirSelect.onchange = () => displaySelectedTafsir(verse, tafsirSelect.value);
         displaySelectedTafsir(verse, tafsirSelect.value);
         modal.classList.add('active');
-    };
+      };
 
-    const displaySelectedTafsir = (verse, tafsirId) => {
+      const fetchTafsirByAyah = async (verseKey, tafsirId, lang) => {
+        const res = await fetch(`${QURAN_API_URL}/tafsirs/${tafsirId}/by_ayah/${verseKey}?language=${lang}`);
+        if (!res.ok) throw new Error('Gagal mengambil tafsir');
+        const data = await res.json();
+        return data.tafsir?.text || '';
+      };
+
+      const displaySelectedTafsir = async (verse, tafsirId) => {
         const tafsirContent = modal.querySelector('#tafsir-content');
-        const selectedTafsirInfo = availableTafsirs.find(t => t.id == tafsirId);
-        if (!selectedTafsirInfo) return;
-        const tafsirData = verse.tafsirs.find(t => t.id == tafsirId);
-        tafsirContent.classList.toggle('arabic', selectedTafsirInfo.lang === 'ar');
-        tafsirContent.innerHTML = tafsirData ? tafsirData.text.replace(/\n/g, '<br>') : `Tafsir (${selectedTafsirInfo.name}) tidak tersedia untuk ayat ini.`;
-    };
+        const selected = availableTafsirs.find(t => t.id == tafsirId);
+        if (!selected) return;
 
-    const toggleBookmark = (verseKey) => {
+        tafsirContent.classList.toggle('arabic', selected.lang === 'ar');
+        tafsirContent.innerHTML = 'Memuat tafsir...';
+
+        try {
+          const inline = verse.tafsirs?.find(t => t.id == tafsirId)?.text;
+          const text = inline || await fetchTafsirByAyah(verse.verse_key, tafsirId, selected.lang);
+          tafsirContent.innerHTML = (text || `Tafsir (${selected.name}) tidak tersedia.`).replace(/\n/g, '<br>');
+        } catch {
+          tafsirContent.innerHTML = `Tafsir (${selected.name}) tidak tersedia untuk ayat ini.`;
+        }
+      };
+
+      const toggleBookmark = (verseKey) => {
         const index = bookmarks.indexOf(verseKey);
         if (index > -1) bookmarks.splice(index, 1);
         else bookmarks.push(verseKey);
         localStorage.setItem('quranBookmarksV2', JSON.stringify(bookmarks));
-    };
+      };
 
-    const toggleAllTranslations = () => {
+      const toggleAllTranslations = () => {
         translationBtn.classList.toggle('active');
         const show = translationBtn.classList.contains('active');
         document.querySelectorAll('.translation-text').forEach(el => el.classList.toggle('hidden', !show));
-    };
-    
-    const setInitialTranslationVisibility = () => {
+      };
+
+      const setInitialTranslationVisibility = () => {
         const show = translationBtn.classList.contains('active');
         document.querySelectorAll('.translation-text').forEach(el => el.classList.toggle('hidden', !show));
-    };
+      };
 
-    const setTheme = (theme) => {
+      const setTheme = (theme) => {
         body.classList.toggle('dark-mode', theme === 'dark');
         localStorage.setItem('quranTheme', theme);
-    };
+      };
 
-    const setFontSize = (sizeClass) => {
+      const setFontSize = (sizeClass) => {
         fontSizes.forEach(size => body.classList.remove(`font-size-${size}`));
         body.classList.add(`font-size-${sizeClass}`);
         localStorage.setItem('quranFontSize', sizeClass);
         currentSizeIndex = fontSizes.indexOf(sizeClass);
-    };
+      };
 
-    const cycleFontSize = () => {
+      const cycleFontSize = () => {
         currentSizeIndex = (currentSizeIndex + 1) % fontSizes.length;
         setFontSize(fontSizes[currentSizeIndex]);
-    };
-    
-    const initializePage = async () => {
-        try {
-            const res = await fetch(`${QURAN_API_URL}/chapters?language=id`);
-            if (!res.ok) throw new Error('Gagal mengambil daftar surah');
-            chaptersData = (await res.json()).chapters;
-            const surahId = getUrlParameter('surah');
-            const juzId = getUrlParameter('juz');
-            let startPage = 1;
-            if (surahId) {
-                const surahInfo = chaptersData.find(c => c.id == surahId);
-                startPage = surahInfo ? surahInfo.pages[0] : 1;
-            } else if (juzId) {
-                const resJuz = await fetch(`${QURAN_API_URL}/juzs/${juzId}`);
-                if (!resJuz.ok) throw new Error('Gagal mengambil data juz');
-                const juzData = (await resJuz.json()).juz;
-                const startingSurah = Object.keys(juzData.verse_mapping)[0];
-                const ayatRange = juzData.verse_mapping[startingSurah];
-                const startingAyat = ayatRange.split('-')[0];
-                const fullVerseKey = `${startingSurah}:${startingAyat}`;
-                const resVerse = await fetch(`${QURAN_API_URL}/verses/by_key/${fullVerseKey}?fields=page_number`);
-                if (!resVerse.ok) throw new Error('Gagal mengambil data halaman ayat');
-                startPage = (await resVerse.json()).verse.page_number;
-            }
-            fetchAndDisplayPage(startPage);
-        } catch (error) {
-            loader.innerHTML = `Gagal memuat data awal.<br><small>${error.message}</small>`;
-        }
-    };
-    
-    translationBtn.onclick = toggleAllTranslations;
-    fontSizeBtn.onclick = cycleFontSize;
-    themeToggleBtn.onclick = () => setTheme(body.classList.contains('dark-mode') ? 'light' : 'dark');
-    modal.querySelector('.modal-close').onclick = () => modal.classList.remove('active');
-    document.addEventListener('click', (e) => {
-        if (!verseMenu.contains(e.target) && !e.target.closest('.verse-menu-button')) {
-            verseMenu.style.display = 'none';
-        }
-    });
-    prevPageBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
-    nextPageBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
-    
-    const savedTheme = localStorage.getItem('quranTheme') || 'light';
-    const savedFontSize = localStorage.getItem('quranFontSize') || 'medium';
-    setTheme(savedTheme);
-    setFontSize(savedFontSize);
+      };
 
-    initializePage();
-});
-</script>
+      const initializePage = async () => {
+        try {
+          const res = await fetch(`${QURAN_API_URL}/chapters?language=id`);
+          if (!res.ok) throw new Error('Gagal mengambil daftar surah');
+          chaptersData = (await res.json()).chapters;
+
+          const surahId = getUrlParameter('surah');
+          const juzId = getUrlParameter('juz');
+          let startPage = 1;
+
+          if (surahId) {
+            const surahInfo = chaptersData.find(c => c.id == surahId);
+            startPage = surahInfo ? surahInfo.pages[0] : 1;
+          } else if (juzId) {
+            const resJuz = await fetch(`${QURAN_API_URL}/juzs/${juzId}`);
+            if (!resJuz.ok) throw new Error('Gagal mengambil data juz');
+            const juzData = (await resJuz.json()).juz;
+            const startingSurah = Object.keys(juzData.verse_mapping)[0];
+            const ayatRange = juzData.verse_mapping[startingSurah];
+            const startingAyat = ayatRange.split('-')[0];
+            const fullVerseKey = `${startingSurah}:${startingAyat}`;
+            const resVerse = await fetch(`${QURAN_API_URL}/verses/by_key/${fullVerseKey}?fields=page_number`);
+            if (!resVerse.ok) throw new Error('Gagal mengambil data halaman ayat');
+            startPage = (await resVerse.json()).verse.page_number;
+          }
+
+          fetchAndDisplayPage(startPage);
+        } catch (error) {
+          loader.innerHTML = `Gagal memuat data awal.<br><small>${error.message}</small>`;
+        }
+      };
+
+      // Events
+      translationBtn.onclick = toggleAllTranslations;
+      fontSizeBtn.onclick = cycleFontSize;
+      themeToggleBtn.onclick = () => setTheme(body.classList.contains('dark-mode') ? 'light' : 'dark');
+
+      modal.querySelector('.modal-close').onclick = () => modal.classList.remove('active');
+      document.addEventListener('click', (e) => {
+        if (!verseMenu.contains(e.target) && !e.target.closest('.verse-menu-button')) {
+          verseMenu.style.display = 'none';
+        }
+      });
+
+      prevPageBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
+      nextPageBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
+
+      // Restore preferensi
+      const savedTheme = localStorage.getItem('quranTheme') || 'light';
+      const savedFontSize = localStorage.getItem('quranFontSize') || 'medium';
+      setTheme(savedTheme);
+      setFontSize(savedFontSize);
+
+      initializePage();
+    });
+  </script>
 </body>
 </html>
