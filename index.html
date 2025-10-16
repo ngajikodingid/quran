@@ -81,9 +81,11 @@
                 if (!chaptersRes.ok || !juzsRes.ok) throw new Error('Network response was not ok.');
                 chaptersData = (await chaptersRes.json()).chapters;
                 juzsData = (await juzsRes.json()).juzs;
+                
                 populateSurahList();
-                populateJuzList();
+                populateJuzList(); // Fungsi ini dipanggil hanya satu kali di sini
                 loadBookmarks();
+                
                 loader.style.display = 'none';
             } catch (error) {
                 loader.textContent = "Gagal memuat data. Periksa koneksi dan coba refresh.";
@@ -100,6 +102,7 @@
         };
 
         const populateJuzList = () => {
+            // PERBAIKAN DI SINI: innerHTML = ... akan mengganti total isi, bukan menambah
             juzListContainer.innerHTML = juzsData.map(juz => {
                 const firstVerseKey = Object.keys(juz.verse_mapping)[0];
                 const firstVerseNum = juz.verse_mapping[firstVerseKey].split('-')[0];
@@ -113,6 +116,7 @@
         };
 
         const loadBookmarks = () => {
+            bookmarkListContainer.innerHTML = ''; // Selalu bersihkan daftar sebelum memuat
             const bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
             if (bookmarks.length === 0) {
                 bookmarkListContainer.innerHTML = `<div class="empty-state">Bookmark akan muncul di sini.</div>`;
@@ -132,14 +136,16 @@
         document.querySelectorAll('.tab-button').forEach(tab => tab.addEventListener('click', (e) => {
             const currentTab = e.currentTarget;
             if (currentTab.classList.contains('active')) {
-                if(currentTab.dataset.tab === 'bookmark-pane') loadBookmarks();
+                if(currentTab.dataset.tab === 'bookmark-pane') loadBookmarks(); // Refresh bookmark jika tab aktif diklik lagi
                 return;
             };
             document.querySelector('.tab-button.active')?.classList.remove('active');
             document.querySelector('.tab-pane.active')?.classList.remove('active');
             currentTab.classList.add('active');
             document.getElementById(currentTab.dataset.tab).classList.add('active');
-            if (currentTab.dataset.tab === 'bookmark-pane') loadBookmarks();
+            if (currentTab.dataset.tab === 'bookmark-pane') {
+                loadBookmarks(); // Panggil loadBookmarks hanya saat tab bookmark diaktifkan
+            }
         }));
         
         searchInput.addEventListener('input', (e) => {
