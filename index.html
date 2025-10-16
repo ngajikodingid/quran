@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Amiri+Quran&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         :root { --primary-color: #2E7D32; --background-color: #F8F9FA; --surface-color: #FFFFFF; --text-color: #212529; --subtle-text-color: #6c757d; --border-color: #E9ECEF; --font-latin: 'Poppins', sans-serif; --font-arabic: 'Amiri Quran', serif; }
         body { font-family: var(--font-latin); background-color: var(--background-color); color: var(--text-color); margin: 0; }
@@ -20,8 +20,7 @@
         #search-input { width: 100%; padding: 12px 15px 12px 40px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background-color: #F8F9FA; box-sizing: border-box; }
         .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--subtle-text-color); }
         .tab-content { padding: 0 20px 20px 20px; }
-        .tab-pane { display: none; }
-        .tab-pane.active { display: block; }
+        .tab-pane { display: none; } .tab-pane.active { display: block; }
         .data-list { list-style: none; padding: 0; margin: 0; }
         .list-item { display: flex; align-items: center; padding: 15px 5px; border-bottom: 1px solid var(--border-color); text-decoration: none; color: var(--text-color); transition: background-color 0.2s; }
         .list-item:hover { background-color: #f8f9fa; }
@@ -42,8 +41,7 @@
                 <button class="tab-button" data-tab="bookmark-pane">Bookmark</button>
             </div>
             <div class="search-wrapper">
-                <i class="fas fa-search"></i>
-                <input type="search" id="search-input" placeholder="Cari nama surah atau juz...">
+                <i class="fas fa-search"></i><input type="search" id="search-input" placeholder="Cari nama surah atau juz...">
             </div>
         </div>
         <div class="tab-content">
@@ -53,7 +51,6 @@
             <div id="bookmark-pane" class="tab-pane"><ul id="bookmark-list" class="data-list"></ul></div>
         </div>
     </div>
-
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const API_BASE_URL = 'https://api.quran.com/api/v4';
@@ -62,7 +59,6 @@
         const bookmarkListContainer = document.getElementById('bookmark-list');
         const loader = document.getElementById('loader');
         const searchInput = document.getElementById('search-input');
-        
         let chaptersData = [];
         let juzsData = [];
 
@@ -72,6 +68,7 @@
                     fetch(`${API_BASE_URL}/chapters?language=id`),
                     fetch(`${API_BASE_URL}/juzs`)
                 ]);
+                if (!chaptersRes.ok || !juzsRes.ok) throw new Error('Network response was not ok.');
                 chaptersData = (await chaptersRes.json()).chapters;
                 juzsData = (await juzsRes.json()).juzs;
                 populateSurahList();
@@ -79,7 +76,8 @@
                 loadBookmarks();
                 loader.style.display = 'none';
             } catch (error) {
-                loader.textContent = "Gagal memuat data. Silakan refresh halaman.";
+                loader.textContent = "Gagal memuat data. Periksa Console (F12) untuk detail error.";
+                console.error("Fetch Error:", error);
             }
         };
 
@@ -87,26 +85,19 @@
             surahListContainer.innerHTML = chaptersData.map(surah => `
                 <a href="detail.html?surah=${surah.id}" class="list-item" data-searchable="${surah.name_simple.toLowerCase()} ${surah.translated_name.name.toLowerCase()}">
                     <span class="item-number">${surah.id}</span>
-                    <div class="item-content">
-                        <div class="item-title">${surah.name_simple}</div>
-                        <div class="item-subtitle">${surah.translated_name.name} • ${surah.verses_count} Ayat</div>
-                    </div>
-                    <div class="item-arabic">${surah.name_arabic}</div>
-                </a>`).join('');
+                    <div class="item-content"><div class="item-title">${surah.name_simple}</div><div class="item-subtitle">${surah.translated_name.name} • ${surah.verses_count} Ayat</div></div>
+                    <div class="item-arabic">${surah.name_arabic}</div></a>`).join('');
         };
 
         const populateJuzList = () => {
             juzListContainer.innerHTML = juzsData.map(juz => {
                 const firstVerseKey = Object.keys(juz.verse_mapping)[0];
-                const firstVerseNum = juz.verse_mapping[firstVerseKey];
-                const surahName = chaptersData.find(c => c.id == firstVerseKey).name_simple;
+                const firstVerseNum = juz.verse_mapping[firstVerseKey].split('-')[0];
+                const surahName = chaptersData.find(c => c.id == firstVerseKey)?.name_simple || '';
                 return `
                     <a href="detail.html?juz=${juz.juz_number}" class="list-item" data-searchable="juz ${juz.juz_number}">
                         <span class="item-number">${juz.juz_number}</span>
-                        <div class="item-content">
-                            <div class="item-title">Juz ${juz.juz_number}</div>
-                            <div class="item-subtitle">Dimulai dari Surah ${surahName} ayat ${firstVerseNum}</div>
-                        </div>
+                        <div class="item-content"><div class="item-title">Juz ${juz.juz_number}</div><div class="item-subtitle">Dimulai dari Surah ${surahName} ayat ${firstVerseNum}</div></div>
                     </a>`;
             }).join('');
         };
@@ -114,31 +105,39 @@
         const loadBookmarks = () => {
             const bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
             if (bookmarks.length === 0) {
-                bookmarkListContainer.innerHTML = `<div class="empty-state">Bookmark akan muncul di sini.</div>`;
+                bookmarkListContainer.innerHTML = `<div class="empty-state">Bookmark akan muncul di sini setelah Anda menandai ayat.</div>`;
             } else {
                 bookmarkListContainer.innerHTML = bookmarks.map(bm => {
                     const [surahNum, ayatNum] = bm.split(':');
                     const surahInfo = chaptersData.find(c => c.id == surahNum);
+                    if (!surahInfo) return '';
                     return `<a href="detail.html?surah=${surahNum}#${bm}" class="list-item">
-                                <span class="item-number"><i class="fas fa-star" style="color:#FFC107;"></i></span>
-                                <div class="item-content">
-                                    <div class="item-title">Surah ${surahInfo.name_simple} Ayat ${ayatNum}</div>
-                                </div>
-                            </a>`;
+                        <span class="item-number"><i class="fas fa-star" style="color:#FFC107;"></i></span>
+                        <div class="item-content"><div class="item-title">Surah ${surahInfo.name_simple} Ayat ${ayatNum}</div></div>
+                    </a>`;
                 }).join('');
             }
         };
         
         document.querySelectorAll('.tab-button').forEach(tab => tab.addEventListener('click', (e) => {
-             document.querySelector('.tab-button.active').classList.remove('active');
-             document.querySelector('.tab-pane.active').classList.remove('active');
-             e.target.classList.add('active');
-             document.getElementById(e.target.dataset.tab).classList.add('active');
+            const currentTab = e.currentTarget;
+            if (currentTab.classList.contains('active')) return;
+
+            document.querySelector('.tab-button.active')?.classList.remove('active');
+            document.querySelector('.tab-pane.active')?.classList.remove('active');
+            
+            currentTab.classList.add('active');
+            document.getElementById(currentTab.dataset.tab).classList.add('active');
+            
+            // Perbarui bookmark list setiap kali tab di-klik, untuk data yang paling baru
+            if (currentTab.dataset.tab === 'bookmark-pane') {
+                loadBookmarks();
+            }
         }));
         
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
-            document.querySelector('.tab-pane.active').querySelectorAll('.list-item').forEach(item => {
+            document.querySelector('.tab-pane.active')?.querySelectorAll('.list-item').forEach(item => {
                 item.style.display = (item.dataset.searchable || '').includes(query) ? 'flex' : 'none';
             });
         });
