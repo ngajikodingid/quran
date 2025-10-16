@@ -38,7 +38,7 @@
       border-radius:16px;
       box-shadow:0 8px 30px var(--shadow-color);
       overflow:hidden; transition:background-color .3s;
-      touch-action: pan-y; /* biar swipe horizontal kita handle */
+      touch-action: pan-y; /* swipe horizontal kita handle */
     }
 
     .sticky-bar{
@@ -64,37 +64,49 @@
     .header-actions{ justify-self:end; display:flex; align-items:center; gap:14px; }
     .header-center{ min-width:0; }
 
-    /* Dropdown Surah (elegan) */
-    .surah-select-wrap{
-      position:relative; width:100%; max-width:360px; margin:0 auto;
-    }
-    .surah-select{
-      -webkit-appearance:none; -moz-appearance:none; appearance:none;
-      width:100%;
-      padding:10px 36px 10px 14px;
-      background:var(--background-color);
-      border:1px solid var(--border-color);
-      border-radius:999px;
-      color:var(--primary-color);
-      font-weight:600; font-size:15px; text-align:center;
-      outline:none; cursor:pointer;
-    }
-    .surah-select:disabled{ opacity:.7; cursor:not-allowed; }
-    .surah-select-wrap .chev{
-      position:absolute; right:12px; top:50%; transform:translateY(-50%);
-      pointer-events:none; color:var(--subtle-text-color); font-size:14px;
-    }
-    .header-center .meta{
-      margin-top:6px; font-size:12.5px; color:var(--subtle-text-color); text-align:center; text-transform:capitalize;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
-
     .back-button{ font-size:20px; color:var(--text-color); text-decoration:none; padding:6px; }
     .header-actions button{
       background:none; border:none; font-size:18px; color:var(--subtle-text-color);
       cursor:pointer; padding:6px;
     }
     .header-actions button.active{ color:var(--primary-color); }
+
+    /* ==== Dropdown Surah (elegan) ==== */
+    .surah-select-wrap{
+      position:relative; width:100%; max-width:420px; margin:0 auto;
+      isolation:isolate;
+    }
+    .surah-select{
+      -webkit-appearance:none; -moz-appearance:none; appearance:none;
+      width:100%;
+      padding:10px 40px 10px 40px;
+      border-radius:999px;
+      border:1px solid transparent;
+      background:
+        linear-gradient(var(--surface-color),var(--surface-color)) padding-box,
+        linear-gradient(135deg,#e9f7ef,#eefaf0) border-box;
+      color:var(--primary-color);
+      font-weight:600; font-size:15px; text-align:center;
+      box-shadow:0 4px 14px var(--shadow-color);
+      outline:none; cursor:pointer;
+      transition: box-shadow .2s, transform .05s;
+    }
+    .surah-select:hover{ box-shadow:0 6px 18px var(--shadow-color); }
+    .surah-select:focus-visible{
+      box-shadow:0 0 0 3px rgba(46,125,50,.15), 0 6px 18px var(--shadow-color);
+    }
+    .surah-select-wrap .chev{
+      position:absolute; right:14px; top:50%; transform:translateY(-50%); pointer-events:none;
+      color:var(--subtle-text-color); font-size:14px;
+    }
+    .surah-select-wrap .sel-icon{
+      position:absolute; left:14px; top:50%; transform:translateY(-50%);
+      color:var(--subtle-text-color); font-size:16px; pointer-events:none;
+    }
+    .header-center .meta{
+      margin-top:6px; font-size:12.5px; color:var(--subtle-text-color); text-align:center; text-transform:capitalize;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
 
     #loader{ text-align:center; padding:80px 0; }
     .spinner{ border:4px solid rgba(128,128,128,.2); width:36px; height:36px; border-radius:50%; border-left-color:var(--primary-color); margin:0 auto 15px; animation:spin 1s ease infinite; }
@@ -104,39 +116,53 @@
     .content{ padding:0 10px 80px 10px; }
 
     .bismillah-header{
-      font-family:var(--font-arabic); text-align:center; font-size:24px; padding:25px 0;
-      border-top:1px solid var(--border-color); border-bottom:1px solid var(--border-color); margin:20px 0;
+      font-family:var(--font-arabic); text-align:center; font-size:22px; padding:22px 0;
+      border-top:1px solid var(--border-color); border-bottom:1px solid var(--border-color); margin:18px 0;
     }
 
-    .verse-item{ padding:25px 0; border-bottom:1px solid var(--border-color); position:relative; }
+    .verse-item{ padding:22px 0; border-bottom:1px solid var(--border-color); position:relative; }
     .verse-item:last-child{ border-bottom:none; }
 
-    .verse-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+    .verse-header{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
     .verse-number-wrapper{
       width:40px; height:40px;
       background-image:url('https://i.ibb.co/pzp553V/ayat-bg-islamic-style-frame-1.png');
       background-size:contain; background-repeat:no-repeat;
       display:flex; align-items:center; justify-content:center;
       font-family:var(--font-arabic); font-size:16px; color:var(--primary-color);
+      flex:0 0 auto;
     }
 
+    /* ==== Tipografi Arab: lebih kecil & rapi kanan-kiri ==== */
     .arabic-text{
-      font-family:var(--font-arabic); text-align:right; direction:rtl; margin-bottom:16px;
-      transition:font-size .3s, line-height .3s;
+      font-family:var(--font-arabic);
+      direction:rtl;
+      text-align:justify;
+      text-justify:inter-word;
+      margin:0 0 14px 0;
+      padding-left:64px;   /* spasi aman untuk tombol menu 3 titik */
+      padding-right:10px;  /* jangan mentok kanan */
+      overflow-wrap:anywhere; /* jaga-jaga di viewport sempit */
+      line-height:var(--arabic-line-height);
+      font-size:var(--arabic-font-size);
+      transition:font-size .2s, line-height .2s;
     }
 
-    .font-size-small{ --arabic-font-size:26px; --arabic-line-height:2.0; }
-    .font-size-medium{ --arabic-font-size:30px; --arabic-line-height:2.2; }
-    .font-size-large{ --arabic-font-size:34px; --arabic-line-height:2.4; }
-    .font-size-xl{ --arabic-font-size:38px; --arabic-line-height:2.6; }
-    .arabic-text{ font-size:var(--arabic-font-size); line-height:var(--arabic-line-height); }
+    /* Skala baru (lebih kecil & proporsional) */
+    .font-size-small { --arabic-font-size:22px; --arabic-line-height:2.0; }
+    .font-size-medium{ --arabic-font-size:26px; --arabic-line-height:2.1; }
+    .font-size-large { --arabic-font-size:30px; --arabic-line-height:2.2; }
+    .font-size-xl    { --arabic-font-size:34px; --arabic-line-height:2.3; }
 
-    .translation-text{ font-size:15px; line-height:1.7; color:var(--subtle-text-color); margin-top:20px; padding-left:55px; }
+    .translation-text{
+      font-size:15px; line-height:1.7; color:var(--subtle-text-color);
+      padding-left:64px; padding-right:10px;
+    }
     .translation-text.hidden{ display:none; }
 
     .verse-menu-button{
       background:none; border:none; font-size:18px; color:#aaa; cursor:pointer; padding:10px;
-      position:absolute; top:15px; left:0;
+      position:absolute; top:12px; left:0;
     }
 
     /* Popup menu fixed */
@@ -162,12 +188,8 @@
     .modal-header h3{ margin:0; font-size:18px; }
     .modal-body{ padding:18px 20px 24px; overflow-y:auto; }
 
-    .modal-toolbar{
-      display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;
-    }
-    .select-ui{
-      position:relative; min-width:220px; flex:1;
-    }
+    .modal-toolbar{ display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+    .select-ui{ position:relative; min-width:220px; flex:1; }
     .select-ui select{
       width:100%; padding:10px 36px 10px 12px;
       background:var(--background-color); color:var(--text-color);
@@ -203,7 +225,8 @@
         <!-- TENGAH: Dropdown Surah -->
         <div class="header-center">
           <div class="surah-select-wrap">
-            <select id="surah-select" class="surah-select" disabled>
+            <i class="fa-solid fa-book-quran sel-icon" aria-hidden="true"></i>
+            <select id="surah-select" class="surah-select" aria-label="Pilih Surah" disabled>
               <option>Memuat…</option>
             </select>
             <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
@@ -233,7 +256,7 @@
 
     <footer class="page-footer sticky-bar">
       <div class="page-navigation">
-        <!-- (tetap mushaf style tombol) Kiri = Next, Kanan = Previous -->
+        <!-- Mushaf style tombol: Kiri = Next (page+1), Kanan = Previous (page-1) -->
         <button id="prev-page-btn" class="nav-button" title="Halaman Berikutnya"><i class="fas fa-chevron-left"></i></button>
         <span id="page-number-display" class="page-number-display">Halaman 1</span>
         <button id="next-page-btn" class="nav-button" title="Halaman Sebelumnya"><i class="fas fa-chevron-right"></i></button>
@@ -294,17 +317,18 @@
       const pageNumberDisplay = document.getElementById('page-number-display');
       const swipeArea = document.getElementById('swipe-area');
 
+      const toId = (x) => Number(String(x ?? '').trim());
       let currentPage = 1;
-      let chaptersById = {};
       let chaptersList = [];
+      const chaptersById = new Map();
       let pageDataCache = {};
       let currentAudio = null;
       let bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
-      const fontSizes = ['medium', 'large', 'xl', 'small'];
+      const fontOrder = ['medium','large','xl','small'];
       let currentSizeIndex = 0;
 
-      // ===== Tafsir sources (dinamis + fallback) =====
-      let tafsirSources = []; // {id, name, lang}
+      /* ===== Tafsir sources (dinamis + fallback) ===== */
+      let tafsirSources = [];
       const fallbackTafsirs = [
         { id: 167, name: 'Kemenag (Ringkas)', lang: 'id' },
         { id: 168, name: 'Kemenag (Lengkap)', lang: 'id' },
@@ -318,8 +342,9 @@
       const getUrlParameter = (name) => new URL(window.location.href).searchParams.get(name);
       const toAbsoluteUrl = (u) => /^https?:\/\//i.test(u) ? u : `https://verses.quran.com/${String(u||'').replace(/^\/+/, '')}`;
 
-      const indexChapters = (chapters) => { chaptersById = {}; chapters.forEach(c => { chaptersById[c.id] = c; }); chaptersList = chapters; };
-      const getChapter = (id) => chaptersById[id] || null;
+      const indexChapters = (arr=[]) => { chaptersList = arr; chaptersById.clear(); arr.forEach(c => chaptersById.set(toId(c.id), c)); };
+      const getChapter = (id) => chaptersById.get(toId(id)) || null;
+      const chapterName = (c, id) => (c?.name_simple || c?.translated_name?.name || c?.name_arabic || `Surah ${toId(id)}`);
 
       const ensureChapters = async () => {
         const res = await fetch(`${QURAN_API_URL}/chapters?language=id`);
@@ -329,25 +354,25 @@
       };
 
       const populateSurahDropdown = (selectedId) => {
-        let html = '';
-        chaptersList.forEach(ch => {
-          html += `<option value="${ch.id}" ${Number(selectedId)===Number(ch.id)?'selected':''}>
-            ${ch.id}. ${ch.name_simple}
-          </option>`;
-        });
-        surahSelect.innerHTML = html;
-        surahSelect.disabled = false;
+        const sid = toId(selectedId);
+        const html = chaptersList.map(ch => `
+          <option value="${ch.id}" ${toId(ch.id)===sid?'selected':''}>
+            ${ch.id}. ${chapterName(ch, ch.id)}
+          </option>
+        `).join('');
+        surahSelect.innerHTML = html || '<option>Data surah tidak tersedia</option>';
+        surahSelect.disabled = !html;
       };
 
-      const updateHeaderMeta = (chInfo) => {
-        if (chInfo && chInfo.revelation_place && chInfo.verses_count){
-          surahInfoHeader.textContent = `${chInfo.revelation_place} • ${chInfo.verses_count} AYAT`;
+      const updateHeaderMeta = (chInfoOrId) => {
+        const c = typeof chInfoOrId === 'object' ? chInfoOrId : getChapter(chInfoOrId);
+        if (c?.revelation_place && c?.verses_count) {
+          surahInfoHeader.textContent = `${c.revelation_place} • ${c.verses_count} AYAT`;
         } else {
           surahInfoHeader.textContent = '';
         }
       };
 
-      // ===== Tafsir discovery =====
       const fetchTafsirCatalog = async () => {
         const langs = ['id','ar','en'];
         const map = new Map();
@@ -356,13 +381,9 @@
             const r = await fetch(`${QURAN_API_URL}/tafsirs?language=${lang}`);
             if (!r.ok) continue;
             const list = (await r.json()).tafsirs || [];
-            list.forEach(t => {
-              // keep unique by id
-              if (!map.has(t.id)) map.set(t.id, { id: t.id, name: t.name, lang });
-            });
+            list.forEach(t => { if (!map.has(t.id)) map.set(t.id, { id:t.id, name:t.name, lang }); });
           } catch {}
         }
-        // merge fallback to guarantee minimum options
         fallbackTafsirs.forEach(t => { if (!map.has(t.id)) map.set(t.id, t); });
         tafsirSources = Array.from(map.values());
       };
@@ -370,7 +391,7 @@
       const fetchPage = async (pageNumber) => {
         const params = new URLSearchParams({
           language: 'id',
-          translations: 33,         // Kemenag (id)
+          translations: 33,         // Kemenag
           fields: 'text_uthmani',
           audio: 7
         });
@@ -382,7 +403,7 @@
 
       const fetchAndDisplayPage = async (pageNumber, keepPosition = false) => {
         if (!pageNumber || pageNumber < 1 || pageNumber > 604) return;
-        currentPage = parseInt(pageNumber);
+        currentPage = toId(pageNumber);
         verseContainer.style.display = 'none';
         loader.style.display = 'block';
 
@@ -409,25 +430,22 @@
         if (!verses || !verses.length) return;
         verseContainer.innerHTML = '';
 
-        // header: pakai surah dari ayat pertama
-        const primarySurahId = Number(verses[0].chapter_id);
+        // Header + dropdown sinkron dengan surah ayat pertama
+        const primarySurahId = toId(verses[0].chapter_id);
         const chInfo = getChapter(primarySurahId);
-        // Set dropdown ke surah ini (jika belum sama)
-        if (Number(surahSelect.value) !== primarySurahId) {
-          surahSelect.value = String(primarySurahId);
-        }
-        updateHeaderMeta(chInfo);
+        if (surahSelect.value !== String(primarySurahId)) surahSelect.value = String(primarySurahId);
+        updateHeaderMeta(chInfo || primarySurahId);
 
         // Konten
         let lastSurahId = null;
         verses.forEach(verse => {
-          if (verse.chapter_id !== lastSurahId) {
+          if (toId(verse.chapter_id) !== lastSurahId) {
             const info = getChapter(verse.chapter_id);
-            if (info && info.bismillah_pre) {
+            if (info?.bismillah_pre) {
               verseContainer.insertAdjacentHTML('beforeend',
                 `<div class="bismillah-header">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ</div>`);
             }
-            lastSurahId = verse.chapter_id;
+            lastSurahId = toId(verse.chapter_id);
           }
 
           const verseNumberArabic = new Intl.NumberFormat('ar-EG').format(verse.verse_number);
@@ -453,9 +471,6 @@
         pageNumberDisplay.textContent = `Halaman ${currentPage}`;
         prevPageBtn.disabled = currentPage >= 604; // kiri = next
         nextPageBtn.disabled = currentPage <= 1;   // kanan = previous
-
-        const hash = window.location.hash.substring(1);
-        if (hash) document.getElementById(hash)?.scrollIntoView();
       };
 
       const attachActionListeners = () => {
@@ -530,38 +545,26 @@
       const tafsirContent = document.getElementById('tafsir-content');
 
       const openTafsirModal = async (verse) => {
-        // Default language follow saved or ID
         const currentLang = localStorage.getItem('tafsirLang') || 'id';
         langSelect.value = currentLang;
 
-        await ensureTafsirOptions(currentLang);
+        if (!tafsirSources.length) await fetchTafsirCatalog();
         buildTafsirSelect(currentLang);
 
         document.getElementById('tafsir-title').textContent =
-          `Tafsir Surah ${getChapter(verse.chapter_id)?.name_simple || verse.chapter_id} Ayat ${verse.verse_number}`;
+          `Tafsir Surah ${chapterName(getChapter(verse.chapter_id), verse.chapter_id)} Ayat ${verse.verse_number}`;
 
-        // load the first option
-        if (tafsirSelect.value) {
-          displaySelectedTafsir(verse, tafsirSelect.value, currentLang);
-        } else {
-          tafsirContent.innerHTML = 'Tidak ada tafsir untuk bahasa ini.';
-        }
+        if (tafsirSelect.value) displaySelectedTafsir(verse, tafsirSelect.value, currentLang);
+        else tafsirContent.innerHTML = 'Tidak ada tafsir untuk bahasa ini.';
 
-        // events
-        langSelect.onchange = async () => {
+        langSelect.onchange = () => {
           localStorage.setItem('tafsirLang', langSelect.value);
-          await ensureTafsirOptions(langSelect.value);
           buildTafsirSelect(langSelect.value);
           if (tafsirSelect.value) displaySelectedTafsir(verse, tafsirSelect.value, langSelect.value);
         };
         tafsirSelect.onchange = () => displaySelectedTafsir(verse, tafsirSelect.value, langSelect.value);
 
         modal.classList.add('active');
-      };
-
-      const ensureTafsirOptions = async (lang) => {
-        if (!tafsirSources.length) await fetchTafsirCatalog();
-        // nothing else needed; we'll filter per lang when building select
       };
 
       const buildTafsirSelect = (lang) => {
@@ -580,7 +583,6 @@
         const source = tafsirSources.find(t => t.id == tafsirId);
         tafsirContent.classList.toggle('arabic', (source?.lang || lang) === 'ar');
         tafsirContent.innerHTML = 'Memuat tafsir...';
-
         try {
           const text = await fetchTafsirByAyah(verse.verse_key, tafsirId, source?.lang || lang || 'id');
           tafsirContent.innerHTML = (text || `Tafsir (${source?.name || 'Terpilih'}) tidak tersedia.`).replace(/\n/g, '<br>');
@@ -606,37 +608,23 @@
         document.querySelectorAll('.translation-text').forEach(el => el.classList.toggle('hidden', !show));
       };
 
-      const setTheme = (theme) => {
-        body.classList.toggle('dark-mode', theme === 'dark');
-        localStorage.setItem('quranTheme', theme);
-      };
-      const setFontSize = (sizeClass) => {
-        ['small','medium','large','xl'].forEach(size => body.classList.remove(`font-size-${size}`));
-        body.classList.add(`font-size-${sizeClass}`);
-        localStorage.setItem('quranFontSize', sizeClass);
-        currentSizeIndex = ['medium','large','xl','small'].indexOf(sizeClass);
-      };
-      const cycleFontSize = () => {
-        const order = ['medium','large','xl','small'];
-        currentSizeIndex = (currentSizeIndex + 1) % order.length;
-        setFontSize(order[currentSizeIndex]);
-      };
+      const setTheme = (theme) => { body.classList.toggle('dark-mode', theme === 'dark'); localStorage.setItem('quranTheme', theme); };
+      const setFontSize = (sizeClass) => { ['small','medium','large','xl'].forEach(s => body.classList.remove(`font-size-${s}`)); body.classList.add(`font-size-${sizeClass}`); localStorage.setItem('quranFontSize', sizeClass); currentSizeIndex = fontOrder.indexOf(sizeClass); };
+      const cycleFontSize = () => { currentSizeIndex = (currentSizeIndex + 1) % fontOrder.length; setFontSize(fontOrder[currentSizeIndex]); };
 
-      // ===== Init =====
+      // ==== Init ====
       const initializePage = async () => {
         try {
           await ensureChapters();
-
-          // isi dropdown
+          // isi dropdown dulu agar UI siap
           populateSurahDropdown(1);
 
-          // jika ada query surah / juz → kalkulasi page awal
           const surahId = getUrlParameter('surah');
           const juzId = getUrlParameter('juz');
           let startPage = 1;
 
           if (surahId) {
-            const si = getChapter(Number(surahId));
+            const si = getChapter(surahId);
             startPage = si ? si.pages[0] : 1;
           } else if (juzId) {
             const resJuz = await fetch(`${QURAN_API_URL}/juzs/${juzId}`);
@@ -652,11 +640,12 @@
           }
 
           await fetchAndDisplayPage(startPage);
-          // set dropdown to current page's first surah
-          const firstV = pageDataCache[startPage]?.[0];
-          if (firstV) {
-            surahSelect.value = String(firstV.chapter_id);
-            updateHeaderMeta(getChapter(Number(firstV.chapter_id)));
+          // sinkronkan dropdown & meta dgn halaman aktif
+          const first = pageDataCache[startPage]?.[0];
+          if (first) {
+            const sid = toId(first.chapter_id);
+            surahSelect.value = String(sid);
+            updateHeaderMeta(getChapter(sid) || sid);
           }
         } catch (error) {
           loader.innerHTML = `Gagal memuat data awal.<br><small>${error.message}</small>`;
@@ -669,7 +658,7 @@
       themeToggleBtn.onclick = () => setTheme(body.classList.contains('dark-mode') ? 'light' : 'dark');
 
       surahSelect.onchange = () => {
-        const id = Number(surahSelect.value);
+        const id = toId(surahSelect.value);
         const info = getChapter(id);
         if (!info) return;
         updateHeaderMeta(info);
@@ -695,9 +684,7 @@
 
       swipeArea.addEventListener('touchstart', (e) => {
         const t = e.changedTouches[0];
-        touchStartX = t.pageX;
-        touchStartY = t.pageY;
-        touchTime = Date.now();
+        touchStartX = t.pageX; touchStartY = t.pageY; touchTime = Date.now();
       }, { passive:true });
 
       swipeArea.addEventListener('touchend', (e) => {
@@ -708,11 +695,9 @@
         if (dt > SWIPE_TIME) return;
         if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return;
 
-        if (dx > 0 && currentPage < 604) {
-          // kiri ➜ kanan = Next (page+1)
+        if (dx > 0 && currentPage < 604) {     // kiri ➜ kanan = Next
           fetchAndDisplayPage(currentPage + 1);
-        } else if (dx < 0 && currentPage > 1) {
-          // kanan ➜ kiri = Previous (page-1)
+        } else if (dx < 0 && currentPage > 1){ // kanan ➜ kiri = Previous
           fetchAndDisplayPage(currentPage - 1);
         }
       }, { passive:true });
