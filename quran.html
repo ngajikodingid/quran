@@ -124,6 +124,7 @@
     <a href="#" id="menu-show-tafsir"><i class="fas fa-book-open"></i> Lihat Tafsir</a>
     <a href="#" id="menu-bookmark"><i class="far fa-star"></i> Simpan ke Bookmark</a>
 </div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const QURAN_API_URL = 'https://api.quran.com/api/v4';
@@ -140,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevPageBtn = document.getElementById('prev-page-btn');
     const nextPageBtn = document.getElementById('next-page-btn');
     const pageNumberDisplay = document.getElementById('page-number-display');
+    
     let currentPage = 1;
     let chaptersData = null;
     let pageDataCache = {};
@@ -147,11 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
     const fontSizes = ['medium', 'large', 'xl', 'small'];
     let currentSizeIndex = 0;
+    
     const availableTafsirs = [
         { id: 167, name: 'Kemenag (Ringkas)', lang: 'id' }, { id: 168, name: 'Kemenag (Lengkap)', lang: 'id' },
-        { id: 161, name: 'Al-Jalalayn', lang: 'ar' }, { id: 16, name: 'Al-Muyassar', lang: 'ar' },
-        { id: 91, name: 'As-Sa\'di', lang: 'ar' }, { id: 14, name: 'Ibn Kathir', lang: 'ar' },
-        { id: 15, name: 'At-Tabari', lang: 'ar' },
+        { id: 161, name: 'Al-Jalalayn', lang: 'ar' }, { id: 16,  name: 'Al-Muyassar', lang: 'ar' },
+        { id: 91,  name: 'As-Sa\'di', lang: 'ar' }, { id: 14,  name: 'Ibn Kathir', lang: 'ar' },
+        { id: 15,  name: 'At-Tabari', lang: 'ar' },
     ];
     const allTafsirIds = availableTafsirs.map(t => t.id).join(',');
 
@@ -259,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
         verseMenu.style.top = `${button.offsetTop + rect.height}px`;
         if ((rect.left + verseMenu.offsetWidth) > window.innerWidth - 15) {
             verseMenu.style.left = 'auto';
-            verseMenu.style.right = '5px';
+            verseMenu.style.right = `${window.innerWidth - (rect.left + rect.width)}px`;
         } else {
             verseMenu.style.left = `${button.offsetLeft}px`;
             verseMenu.style.right = 'auto';
@@ -370,8 +373,9 @@ document.addEventListener('DOMContentLoaded', () => {
             verseMenu.style.display = 'none';
         }
     });
-    prevPageBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
+    // Navigasi Footer (logika dibalik)
     nextPageBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
+    prevPageBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
     
     const savedTheme = localStorage.getItem('quranTheme') || 'light';
     const savedFontSize = localStorage.getItem('quranFontSize') || 'medium';
