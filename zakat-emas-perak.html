@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Zakat Emas, Perak & Perhiasan</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #28a745;
+            --primary-dark: #218838;
+            --secondary-color: #f8f9fa;
+            --text-color: #343a40;
+            --border-color: #dee2e6;
+            --white: #ffffff;
+            --success-bg: #d1fae5;
+            --success-text: #065f46;
+            --warning-bg: #feefc3;
+            --warning-text: #7a5f03;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            padding: 20px;
+        }
+
+        .kalkulator-container {
+            max-width: 1100px; 
+            margin: 0 auto;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+        }
+        
+        header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
+        header h1 { color: var(--primary-color); font-size: 1.8rem; margin: 0; }
+        .back-button { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--primary-color); font-weight: 500; transition: color 0.3s; }
+        .back-button:hover { color: var(--primary-dark); }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .section-title { font-size: 1.3rem; color: var(--primary-dark); border-left: 4px solid var(--primary-color); padding-left: 10px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 25px; }
+        
+        .input-group { position: relative; }
+        .input-group .prefix { position: absolute; left: 1px; top: 1px; bottom: 1px; display: flex; align-items: center; padding: 0 12px; background-color: var(--secondary-color); border-right: 1px solid var(--border-color); border-radius: 8px 0 0 8px; font-weight: 500; }
+        .input-group .suffix { position: absolute; right: 1px; top: 1px; bottom: 1px; display: flex; align-items: center; padding: 0 12px; background-color: var(--secondary-color); border-left: 1px solid var(--border-color); border-radius: 0 8px 8px 0; font-weight: 500; }
+
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 1rem; transition: border-color 0.3s, box-shadow 0.3s; text-align: right; }
+        .input-group input[type="text"].harga { padding-left: 50px; }
+        .input-group input[type="text"].gram { padding-right: 60px; }
+        input[type="text"]:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1); }
+        
+        .nisab-display { text-align: center; padding: 20px; background-color: var(--secondary-color); border-radius: 8px; }
+        .nisab-display p { margin: 0; font-weight: 600; font-size: 1rem; }
+        .nisab-display .nisab-value { font-size: 1.8rem; font-weight: 700; color: var(--primary-dark); }
+        
+        .user-note { font-size: 0.85rem; color: #555; margin-top: 15px; padding: 10px; background-color: #e9ecef; border-radius: 6px; border-left: 3px solid var(--primary-color); }
+        .user-note a { color: var(--primary-dark); font-weight: 600; text-decoration: none; }
+        .user-note a:hover { text-decoration: underline; }
+
+        details { margin-bottom: 10px; }
+        summary { font-weight: 500; cursor: pointer; list-style: none; display: flex; align-items: center; margin-bottom: 8px; }
+        summary::-webkit-details-marker { display: none; }
+        summary:after { content: '\f05a'; font-family: "Font Awesome 5 Free"; font-weight: 900; color: #6c757d; margin-left: 8px; transition: color 0.3s; }
+        summary:hover:after { color: var(--primary-color); }
+        details[open] > summary { color: var(--primary-color); }
+        details .description { font-size: 0.9rem; color: #6c757d; padding: 15px; background-color: var(--secondary-color); border-radius: 6px; border-left: 3px solid var(--border-color); }
+
+        .hasil-container { margin-top: 20px; padding: 20px; border-radius: 8px; text-align: center; }
+        .hasil-container.wajib { background-color: var(--success-bg); color: var(--success-text); }
+        .hasil-container.tidak-wajib { background-color: var(--warning-bg); color: var(--warning-text); }
+        .hasil-container h3 { margin-top: 0; font-size: 1.2em; }
+        .hasil-container .jumlah-zakat { font-size: 2em; font-weight: 700; margin: 10px 0; }
+        
+        @media (max-width: 800px) { 
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) { 
+            body { padding: 10px; } 
+            .kalkulator-container { padding: 20px; } 
+            header h1 { font-size: 1.5rem; } 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="kalkulator-container">
+        <header><h1>Zakat Emas & Perak</h1><a href="index.html" class="back-button"><i class="fas fa-arrow-left"></i> Kembali</a></header>
+
+        <main>
+            <div class="main-grid">
+                <section>
+                    <h2 class="section-title">Komponen Harta</h2>
+                    <form id="zakatForm" onsubmit="return false;">
+                        
+                        <div class="form-group">
+                            <details><summary>Emas yang Disimpan</summary><p class="description">Masukkan total berat emas yang tidak dipakai, baik dalam bentuk logam mulia, koin, atau perhiasan yang disimpan sebagai tabungan/investasi.</p></details>
+                            <div class="input-group"><input type="text" class="gram" id="emasDisimpan" placeholder="0" inputmode="numeric"><span class="suffix">gram</span></div>
+                        </div>
+
+                        <div class="form-group">
+                            <details><summary>Perhiasan Emas Dipakai (jika berlebihan)</summary><p class="description">Menurut Mazhab Syafi'i, perhiasan yang dipakai dalam batas wajar tidak wajib dizakati. Namun, jika jumlahnya berlebihan (israf) di luar kebiasaan ('urf), maka wajib dihitung zakatnya. Masukkan hanya jumlah yang Anda anggap berlebihan.</p></details>
+                            <div class="input-group"><input type="text" class="gram" id="emasBerlebihan" placeholder="0" inputmode="numeric"><span class="suffix">gram</span></div>
+                        </div>
+
+                        <div class="form-group">
+                            <details><summary>Perak yang Disimpan</summary>
+                                <p class="description">Masukkan total berat perak yang Anda simpan (tidak dipakai) dalam bentuk apapun. Nishab perak adalah 543,35 gram.</p>
+                            </details>
+                            <div class="input-group"><input type="text" class="gram" id="perakDisimpan" placeholder="0" inputmode="numeric"><span class="suffix">gram</span></div>
+                        </div>
+
+                    </form>
+                </section>
+
+                <section>
+                    <h2 class="section-title">Perhitungan Nishab & Hasil</h2>
+
+                    <div class="form-group">
+                        <label for="hargaEmas">Harga Emas per Gram (saat ini)</label>
+                        <div class="input-group">
+                            <span class="prefix">Rp</span>
+                            <input type="text" class="harga" id="hargaEmas" value="2.400.000" inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hargaPerak">Harga Perak per Gram (saat ini)</label>
+                        <div class="input-group">
+                            <span class="prefix">Rp</span>
+                            <input type="text" class="harga" id="hargaPerak" value="20.000" inputmode="numeric">
+                        </div>
+                         <p class="user-note">
+                            Silakan sesuaikan harga emas & perak. Cek di: 
+                            <a href="https://www.logammulia.com/id/harga-emas-hari-ini" target="_blank" rel="noopener noreferrer">Logam Mulia</a> atau 
+                            <a href="https://harga-emas.org/perak" target="_blank" rel="noopener noreferrer">Harga-emas.org</a>.
+                        </p>
+                    </div>
+
+                    <div class="nisab-display">
+                        <p>Nishab Zakat (setara 77,5 gram emas)</p>
+                        <span class="nisab-value" id="nisabValue">Rp 0</span>
+                    </div>
+
+                    <div class="hasil-container" id="hasilZakat">
+                        <p>Silakan isi komponen harta Anda untuk melihat hasil perhitungan zakat.</p>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // [DIUBAH] Mengganti nishab emas dari 85 menjadi 77.5
+            const NISHAB_EMAS_GRAM = 77.5;
+            const PERSEN_ZAKAT = 0.025;
+
+            const allNumberInputs = document.querySelectorAll('input[type="text"]');
+            const hargaEmasInput = document.getElementById('hargaEmas');
+            const hargaPerakInput = document.getElementById('hargaPerak');
+            const nisabValueDisplay = document.getElementById('nisabValue');
+            const hasilContainer = document.getElementById('hasilZakat');
+            
+            const formatRupiahDisplay = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+            const cleanInput = (value) => value.toString().replace(/[^0-9]/g, '');
+
+            const formatInput = (event) => {
+                let input = event.target;
+                let value = input.value;
+                let cleanValue = cleanInput(value);
+
+                if (cleanValue) {
+                    let formattedValue = new Intl.NumberFormat('id-ID').format(cleanValue);
+                    input.value = formattedValue;
+                } else {
+                    input.value = '';
+                }
+            };
+
+            function hitungZakat() {
+                const hargaEmas = parseFloat(cleanInput(hargaEmasInput.value)) || 0;
+                const hargaPerak = parseFloat(cleanInput(hargaPerakInput.value)) || 0;
+
+                const nilaiNisab = hargaEmas * NISHAB_EMAS_GRAM;
+                nisabValueDisplay.textContent = formatRupiahDisplay(nilaiNisab);
+
+                const emasDisimpan = parseFloat(cleanInput(document.getElementById('emasDisimpan').value)) || 0;
+                const emasBerlebihan = parseFloat(cleanInput(document.getElementById('emasBerlebihan').value)) || 0;
+                const perakDisimpan = parseFloat(cleanInput(document.getElementById('perakDisimpan').value)) || 0;
+
+                const totalGramEmas = emasDisimpan + emasBerlebihan;
+                const totalNilaiEmas = totalGramEmas * hargaEmas;
+                const totalNilaiPerak = perakDisimpan * hargaPerak;
+                const totalHarta = totalNilaiEmas + totalNilaiPerak;
+
+                if (totalHarta >= nilaiNisab) {
+                    const jumlahZakat = totalHarta * PERSEN_ZAKAT;
+                    hasilContainer.className = 'hasil-container wajib';
+                    hasilContainer.innerHTML = `<h3>Anda Wajib Membayar Zakat</h3><p>Total nilai harta Anda <strong>${formatRupiahDisplay(totalHarta)}</strong> telah mencapai nishab.</p><p>Zakat yang harus dikeluarkan (2,5%):</p><div class="jumlah-zakat">${formatRupiahDisplay(jumlahZakat)}</div>`;
+                } else {
+                    hasilContainer.className = 'hasil-container tidak-wajib';
+                    hasilContainer.innerHTML = `<h3>Anda Belum Wajib Zakat</h3><p>Total nilai harta Anda <strong>${formatRupiahDisplay(totalHarta)}</strong> belum mencapai nishab (${formatRupiahDisplay(nilaiNisab)}).</p>`;
+                }
+            }
+
+            allNumberInputs.forEach(input => {
+                input.addEventListener('input', formatInput);
+                input.addEventListener('input', hitungZakat);
+            });
+            
+            formatInput({ target: hargaEmasInput });
+            formatInput({ target: hargaPerakInput });
+            hitungZakat();
+        });
+    </script>
+
+</body>
+</html>
