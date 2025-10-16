@@ -21,6 +21,8 @@
         .back-button { margin-right: 15px; font-size: 20px; color: var(--text-color); text-decoration: none; }
         #view-title { font-size: 18px; font-weight: 600; color: var(--primary-color); }
         #juz-info { font-size: 14px; color: #6c757d; }
+        .header-actions button { background: none; border: none; font-size: 18px; color: var(--subtle-text-color); cursor: pointer; padding: 5px; }
+        .header-actions button.active { color: var(--primary-color); }
         #loader { text-align: center; padding: 80px 0; }
         .spinner { border: 4px solid rgba(0,0,0,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: var(--primary-color); margin: 0 auto 15px; animation: spin 1s ease infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -33,6 +35,7 @@
         .verse-actions button { background: #f1f3f5; border: 1px solid #ddd; width: 36px; height: 36px; border-radius: 50%; font-size: 14px; color: #555; cursor: pointer; transition: all 0.2s; }
         .verse-actions button:hover { background-color: #e9ecef; }
         .verse-actions button.active { background-color: var(--primary-color); color: #FFD700; }
+        .verse-actions .is-playing i { color: var(--primary-color); }
         .arabic-text { font-family: var(--font-arabic); font-size: 28px; text-align: right; direction: rtl; line-height: 2.0; margin-bottom: 16px; }
         .translation-text { font-size: 15px; line-height: 1.7; color: #444; margin-top: 16px; } .translation-text.hidden { display: none; }
         .page-navigation { display: flex; justify-content: space-between; align-items: center; }
@@ -53,6 +56,9 @@
             <div class="header-info">
                 <a href="home.html" class="back-button"><i class="fas fa-arrow-left"></i></a>
                 <div><h1 id="view-title">Memuat...</h1><div id="juz-info"></div></div>
+            </div>
+            <div class="header-actions">
+                <button id="toggle-translation" class="active" title="Tampilkan/Sembunyikan Terjemahan"><i class="fas fa-book"></i></button>
             </div>
         </div>
     </header>
@@ -81,10 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevBtn = document.getElementById('prev-page-btn');
     const nextBtn = document.getElementById('next-page-btn');
     const pageInput = document.getElementById('page-number-input');
+    const translationBtn = document.getElementById('toggle-translation');
     const modal = document.getElementById('tafsir-modal');
     let currentPage = 1;
     let chaptersData = null;
     let currentAudio = null;
+    let currentPlayingBtn = null;
     let bookmarks = JSON.parse(localStorage.getItem('quranBookmarksV2')) || [];
 
     const getUrlParameter = (name) => new URL(window.location.href).searchParams.get(name);
@@ -96,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loader.style.display = 'block';
         if (location.hash) { history.pushState("", document.title, window.location.pathname + window.location.search); }
         window.scrollTo(0, 0);
+
         const params = new URLSearchParams({ language: 'id', translations: 33, tafsirs: 167, audio: 7, fields: 'text_uthmani' });
         try {
             const response = await fetch(`${API_BASE_URL}/verses/by_page/${currentPage}?${params}`);
@@ -128,7 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span class="verse-number">${verse.verse_key}</span>
                         <div class="verse-actions">
                             <button class="play-audio-btn" title="Audio" data-audio-url="${verse.audio.url}"><i class="fas fa-play"></i></button>
-                            <button class="toggle-translation-btn" title="Terjemahan"><i class="fas fa-language"></i></button>
                             <button class="tafsir-btn" title="Tafsir"><i class="fas fa-book-open"></i></button>
                             <button class="bookmark-btn ${isBookmarked ? 'active' : ''}" title="Bookmark"><i class="fas fa-star"></i></button>
                         </div>
@@ -138,6 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
         });
         attachActionListeners(verses);
+        setInitialTranslationVisibility();
         const hash = window.location.hash.substring(1);
         if (hash) document.getElementById(hash)?.scrollIntoView();
     };
@@ -146,22 +155,43 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.verse-item').forEach((item, index) => {
             const verse = versesData[index];
             item.querySelector('.play-audio-btn').onclick = (e) => handleAudio(e.currentTarget);
-            item.querySelector('.toggle-translation-btn').onclick = (e) => e.currentTarget.closest('.verse-item').querySelector('.translation-text').classList.toggle('hidden');
             item.querySelector('.tafsir-btn').onclick = () => openTafsirModal(verse);
             item.querySelector('.bookmark-btn').onclick = (e) => toggleBookmark(e.currentTarget, verse.verse_key);
         });
     };
     
     const handleAudio = (button) => {
-        if (currentAudio) { currentAudio.pause(); }
-        currentAudio = new Audio(`https://verses.quran.com/${button.dataset.audioUrl}`);
+        const audioUrl = `https://verses.quran.com/${button.dataset.audioUrl}`;
+        if (currentAudio && !currentAudio.paused) {
+            currentAudio.pause();
+            if (currentPlayingBtn) {
+                currentPlayingBtn.innerHTML = '<i class="fas fa-play"></i>';
+                currentPlayingBtn.classList.remove('is-playing');
+            }
+            if (currentAudio.src === audioUrl) {
+                currentAudio = null;
+                return;
+            }
+        }
+        currentAudio = new Audio(audioUrl);
+        currentPlayingBtn = button;
+        button.innerHTML = '<i class="fas fa-pause"></i>';
+        button.classList.add('is-playing');
         currentAudio.play();
+        currentAudio.onended = () => {
+            button.innerHTML = '<i class="fas fa-play"></i>';
+            button.classList.remove('is-playing');
+            currentAudio = null;
+        };
     };
 
     const openTafsirModal = (verse) => {
         const surahName = chaptersData.find(c => c.id == verse.chapter_id)?.name_simple || '';
+        const tafsirContent = verse.tafsirs && verse.tafsirs.length > 0
+            ? verse.tafsirs[0].text
+            : "Tafsir tidak tersedia untuk ayat ini.";
         modal.querySelector('#tafsir-title').textContent = `Tafsir ${surahName} Ayat ${verse.verse_number}`;
-        modal.querySelector('#tafsir-text').innerHTML = verse.tafsirs[0].text;
+        modal.querySelector('#tafsir-text').innerHTML = tafsirContent;
         modal.classList.add('active');
     };
 
@@ -171,6 +201,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (index > -1) bookmarks.splice(index, 1);
         else bookmarks.push(verseKey);
         localStorage.setItem('quranBookmarksV2', JSON.stringify(bookmarks));
+    };
+
+    const toggleAllTranslations = () => {
+        translationBtn.classList.toggle('active');
+        const show = translationBtn.classList.contains('active');
+        document.querySelectorAll('.translation-text').forEach(el => el.classList.toggle('hidden', !show));
+    };
+    
+    const setInitialTranslationVisibility = () => {
+        const show = translationBtn.classList.contains('active');
+        document.querySelectorAll('.translation-text').forEach(el => el.classList.toggle('hidden', !show));
     };
 
     const updateNavigation = () => {
@@ -184,11 +225,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch(`${API_BASE_URL}/chapters?language=id`);
             if (!res.ok) throw new Error('Gagal mengambil daftar surah');
             chaptersData = (await res.json()).chapters;
-
             const surahId = getUrlParameter('surah');
             const juzId = getUrlParameter('juz');
             let startPage = 1;
-
             if (surahId) {
                 const surahInfo = chaptersData.find(c => c.id == surahId);
                 startPage = surahInfo ? surahInfo.pages[0] : 1;
@@ -196,13 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const resJuz = await fetch(`${API_BASE_URL}/juzs/${juzId}`);
                 if (!resJuz.ok) throw new Error('Gagal mengambil data juz');
                 const juzData = (await resJuz.json()).juz;
-                
-                // --- PERBAIKAN UTAMA DI SINI ---
                 const startingSurah = Object.keys(juzData.verse_mapping)[0];
-                const ayatRange = juzData.verse_mapping[startingSurah]; // Cth: "1-7"
-                const startingAyat = ayatRange.split('-')[0]; // Ambil angka pertama saja, yaitu "1"
-                const fullVerseKey = `${startingSurah}:${startingAyat}`; // Membuat kunci yang benar, cth: "1:1"
-                
+                const ayatRange = juzData.verse_mapping[startingSurah];
+                const startingAyat = ayatRange.split('-')[0];
+                const fullVerseKey = `${startingSurah}:${startingAyat}`;
                 const resVerse = await fetch(`${API_BASE_URL}/verses/by_key/${fullVerseKey}?fields=page_number`);
                 if (!resVerse.ok) throw new Error('Gagal mengambil data halaman ayat');
                 startPage = (await resVerse.json()).verse.page_number;
@@ -217,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
     prevBtn.onclick = () => fetchAndDisplayPage(currentPage - 1);
     nextBtn.onclick = () => fetchAndDisplayPage(currentPage + 1);
     pageInput.onchange = () => fetchAndDisplayPage(pageInput.value);
+    translationBtn.onclick = toggleAllTranslations;
     modal.querySelector('.modal-close').onclick = () => modal.classList.remove('active');
     window.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
 
