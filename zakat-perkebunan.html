@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Zakat Perkebunan</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-color: #28a745;
+            --primary-dark: #218838;
+            --secondary-color: #f8f9fa;
+            --text-color: #343a40;
+            --border-color: #dee2e6;
+            --white: #ffffff;
+            --success-bg: #d1fae5;
+            --success-text: #065f46;
+            --warning-bg: #feefc3;
+            --warning-text: #7a5f03;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            padding: 20px;
+        }
+
+        .kalkulator-container { max-width: 1100px; margin: 0 auto; background: var(--white); padding: 30px; border-radius: 15px; box-shadow: var(--shadow); }
+        
+        header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
+        header h1 { color: var(--primary-color); font-size: 1.8rem; margin: 0; }
+        .back-button { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--primary-color); font-weight: 500; transition: color 0.3s; }
+        .back-button:hover { color: var(--primary-dark); }
+
+        .section-title { font-size: 1.3rem; color: var(--primary-dark); border-left: 4px solid var(--primary-color); padding-left: 10px; margin-bottom: 20px; }
+        
+        .option-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+        .option-card { border: 2px solid var(--border-color); padding: 25px; border-radius: 10px; cursor: pointer; transition: all 0.3s; }
+        .option-card:hover { border-color: var(--primary-color); background-color: #f8fbf9; }
+        .option-card.selected { border-color: var(--primary-dark); background-color: #e9f5ec; box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2); }
+        .option-card h3 { color: var(--primary-dark); margin-bottom: 5px; font-size: 1.2rem;}
+        .option-card p { font-size: 0.9rem; color: #6c757d; }
+
+        .calculator-form { display: none; animation: fadeIn 0.5s; }
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .form-group { margin-bottom: 25px; }
+        .input-group { position: relative; display: flex; }
+        .input-group .prefix { position: absolute; left: 1px; top: 1px; bottom: 1px; display: flex; align-items: center; padding: 0 12px; background-color: var(--secondary-color); border-right: 1px solid var(--border-color); border-radius: 8px 0 0 8px; font-weight: 500; z-index: 2;}
+        
+        input[type="text"], select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 1rem; background-color: white; }
+        input[type="text"]:focus, select:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1); }
+        .input-group input { text-align: right; flex-grow: 1; border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: none; }
+        .input-group select { width: auto; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+        .input-group input.full-width { padding-left: 50px; border-radius: 8px; border-right: 1px solid var(--border-color); }
+        
+        .user-note { font-size: 0.85rem; color: #555; margin-top: 15px; padding: 10px; background-color: #e9ecef; border-radius: 6px; border-left: 3px solid var(--primary-color); }
+        .user-note a { color: var(--primary-dark); font-weight: 600; text-decoration: none; }
+        .user-note a:hover { text-decoration: underline; }
+        
+        details { margin-bottom: 10px; }
+        summary { font-weight: 500; cursor: pointer; list-style: none; display: flex; align-items: center; margin-bottom: 8px; }
+        summary::-webkit-details-marker { display: none; }
+        summary:after { content: '\f05a'; font-family: "Font Awesome 5 Free"; font-weight: 900; color: #6c757d; margin-left: 8px; transition: color 0.3s; }
+        summary:hover:after { color: var(--primary-color); }
+        
+        .radio-group { display: flex; gap: 20px; }
+        .radio-option { flex: 1; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .radio-option input { margin-right: 10px; }
+        .radio-option.selected { background-color: #e9f5ec; border-color: var(--primary-color); }
+
+        .nisab-display, .hasil-container { text-align: center; padding: 20px; border-radius: 8px; }
+        .nisab-display { background-color: var(--secondary-color); }
+        .nisab-display p, .hasil-container p { margin: 0; }
+        .nisab-value, .jumlah-zakat { font-weight: 700; color: var(--primary-dark); }
+        .nisab-value { font-size: 1.8rem; }
+        .jumlah-zakat { font-size: 2em; }
+        .hasil-container { margin-top: 20px; }
+        .hasil-container.wajib { background-color: var(--success-bg); color: var(--success-text); }
+        .hasil-container.tidak-wajib { background-color: var(--warning-bg); color: var(--warning-text); }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @media (max-width: 800px) { .option-selector, .main-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="kalkulator-container">
+        <header><h1>Zakat Perkebunan</h1><a href="kalkulator-zakat.html" class="back-button"><i class="fas fa-arrow-left"></i> Kembali</a></header>
+
+        <main>
+            <h2 class="section-title">1. Pilih Jenis Kebun Anda</h2>
+            <div class="option-selector">
+                <div class="option-card" id="pilihKurmaAnggur">
+                    <h3>Kebun Kurma & Anggur</h3>
+                    <p>Untuk buah-buahan yang memiliki aturan zakat pertanian klasik (nishab 5 wasaq).</p>
+                </div>
+                <div class="option-card" id="pilihProduktif">
+                    <h3>Perkebunan Produktif (Niaga)</h3>
+                    <p>Untuk tanaman yang hasilnya diniagakan (sawit, kopi, karet, teh, cengkeh, dll).</p>
+                </div>
+            </div>
+
+            <div id="formKurmaAnggur" class="calculator-form">
+                <h2 class="section-title">2. Hitung Zakat Kurma & Anggur</h2>
+                <div class="main-grid">
+                    <section>
+                         <div class="form-group">
+                            <label for="hasilPanenKurma">Jumlah Panen Anda (setelah kering)</label>
+                            <div class="input-group">
+                                <input type="text" id="hasilPanenKurma" placeholder="0" inputmode="numeric">
+                                <select id="satuanBeratKurma">
+                                    <option value="kg">Kg</option>
+                                    <option value="kuintal">Kuintal</option>
+                                    <option value="ton">Ton</option>
+                                </select>
+                            </div>
+                        </div>
+                         <div class="form-group">
+                            <label>Metode Pengairan (Irigasi)</label>
+                            <div class="radio-group">
+                                <label class="radio-option selected"><input type="radio" name="irigasiKurma" value="10" checked> Alami (Tadah Hujan)</label>
+                                <label class="radio-option"><input type="radio" name="irigasiKurma" value="5"> Berbayar</label>
+                            </div>
+                        </div>
+                    </section>
+                    <section>
+                        <div class="nisab-display">
+                            <p>Batas Nishab (5 Wasaq)</p>
+                            <span class="nisab-value">653 kg</span>
+                        </div>
+                        <div class="hasil-container" id="hasilKurmaAnggur"></div>
+                    </section>
+                </div>
+            </div>
+
+            <div id="formProduktif" class="calculator-form">
+                <h2 class="section-title">2. Hitung Zakat Perkebunan Produktif (Siklus Tahunan)</h2>
+                <div class="main-grid">
+                    <section>
+                        <div class="form-group">
+                            <details><summary>Biaya Bibit (Modal Awal)</summary><p class="description">Besaran modal yang digunakan untuk membeli benih tanaman yang akan diputar kembali dalam satu tahun.</p></details>
+                            <div class="input-group"><span class="prefix">Rp</span><input type="text" class="full-width" id="biayaBibit" placeholder="0" inputmode="numeric"></div>
+                        </div>
+                        <div class="form-group">
+                            <details><summary>Simpanan (Hasil Penjualan)</summary><p class="description">Total hasil penjualan tanaman yang ditabung atau disimpan selama satu tahun produksi (haul).</p></details>
+                            <div class="input-group"><span class="prefix">Rp</span><input type="text" class="full-width" id="simpananProduktif" placeholder="0" inputmode="numeric"></div>
+                        </div>
+                         <div class="form-group">
+                            <details><summary>Piutang Dagang</summary><p class="description">Tagihan dari hasil penjualan kepada pihak lain yang diharapkan dapat kembali.</p></details>
+                            <div class="input-group"><span class="prefix">Rp</span><input type="text" class="full-width" id="piutangProduktif" placeholder="0" inputmode="numeric"></div>
+                        </div>
+                        <div class="form-group">
+                            <details><summary>Utang Modal Bibit</summary><p class="description">Utang yang ditanggung khusus untuk mendapatkan bibit (modal usaha). Utang di luar tujuan permodalan tidak dihitung.</p></details>
+                            <div class="input-group"><span class="prefix">Rp</span><input type="text" class="full-width" id="utangProduktif" placeholder="0" inputmode="numeric"></div>
+                        </div>
+                    </section>
+                    <section>
+                         <div class="form-group">
+                            <label for="hargaEmasProduktif">Harga Emas per Gram</label>
+                            <div class="input-group"><span class="prefix">Rp</span><input type="text" class="full-width" id="hargaEmasProduktif" value="2.400.000" inputmode="numeric"></div>
+                            <p class="user-note">
+                                Harga di atas adalah kisaran. Untuk hasil akurat, silakan sesuaikan dengan harga emas hari ini. <br>
+                                Cek di: 
+                                <a href="https://www.logammulia.com/id/harga-emas-hari-ini" target="_blank" rel="noopener noreferrer">Logam Mulia</a> atau 
+                                <a href="https://harga-emas.org/" target="_blank" rel="noopener noreferrer">Harga-Emas.org</a>.
+                            </p>
+                        </div>
+                        <div class="nisab-display">
+                            <p>Nishab Zakat (setara 77,5 gram emas)</p>
+                            <span class="nisab-value" id="nisabValueProduktif">Rp 0</span>
+                        </div>
+                        <div class="hasil-container" id="hasilProduktif"></div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // === HELPER FUNCTIONS ===
+            const formatRupiah = (angka) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+            const formatAngka = (angka) => new Intl.NumberFormat('id-ID').format(angka);
+            const cleanInput = (value) => value.toString().replace(/\D/g, '');
+            const formatInputEvent = (event) => {
+                let input = event.target;
+                let cleanValue = cleanInput(input.value);
+                input.value = cleanValue ? formatAngka(cleanValue) : '';
+            };
+
+            // === ELEMEN PEMILIH OPSI ===
+            const btnKurmaAnggur = document.getElementById('pilihKurmaAnggur');
+            const btnProduktif = document.getElementById('pilihProduktif');
+            const formKurmaAnggur = document.getElementById('formKurmaAnggur');
+            const formProduktif = document.getElementById('formProduktif');
+
+            // === ELEMEN FORM KURMA & ANGGUR ===
+            const inputPanenKurma = document.getElementById('hasilPanenKurma');
+            const selectSatuanKurma = document.getElementById('satuanBeratKurma'); // [DIUBAH]
+            const radiosIrigasiKurma = document.querySelectorAll('input[name="irigasiKurma"]');
+            const hasilKurmaContainer = document.getElementById('hasilKurmaAnggur');
+            const konversiSatuan = { kg: 1, kuintal: 100, ton: 1000 }; // [DIUBAH]
+
+            // === ELEMEN FORM PRODUKTIF ===
+            const inputsProduktif = document.querySelectorAll('#hargaEmasProduktif, #biayaBibit, #simpananProduktif, #piutangProduktif, #utangProduktif');
+            const displayNishabProduktif = document.getElementById('nisabValueProduktif');
+            const hasilProduktifContainer = document.getElementById('hasilProduktif');
+            
+            // === LOGIKA PEMILIHAN OPSI ===
+            btnKurmaAnggur.addEventListener('click', () => {
+                btnKurmaAnggur.classList.add('selected');
+                btnProduktif.classList.remove('selected');
+                formKurmaAnggur.style.display = 'block';
+                formProduktif.style.display = 'none';
+                hitungZakatKurmaAnggur();
+            });
+
+            btnProduktif.addEventListener('click', () => {
+                btnProduktif.classList.add('selected');
+                btnKurmaAnggur.classList.remove('selected');
+                formProduktif.style.display = 'block';
+                formKurmaAnggur.style.display = 'none';
+                hitungZakatProduktif();
+            });
+
+            // === FUNGSI KALKULASI ZAKAT KURMA & ANGGUR ===
+            function hitungZakatKurmaAnggur() {
+                const NISHAB_KG = 653;
+                const hasilPanenInput = parseFloat(cleanInput(inputPanenKurma.value)) || 0;
+                const satuan = selectSatuanKurma.value; // [DIUBAH]
+                const faktor = konversiSatuan[satuan]; // [DIUBAH]
+                const hasilPanenKg = hasilPanenInput * faktor; // [DIUBAH]
+                const kadar = parseFloat(document.querySelector('input[name="irigasiKurma"]:checked').value);
+                
+                if (hasilPanenKg >= NISHAB_KG) {
+                    const zakatKg = hasilPanenKg * (kadar / 100);
+                    const zakatOutput = zakatKg / faktor; // [DIUBAH]
+                    hasilKurmaContainer.className = 'hasil-container wajib';
+                    // [DIUBAH] Menampilkan satuan yang dipilih
+                    hasilKurmaContainer.innerHTML = `<h3>Anda Wajib Zakat</h3><p>Zakat yang dikeluarkan (${kadar}%):</p><div class="jumlah-zakat">${zakatOutput.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${satuan}</div>`;
+                } else {
+                    hasilKurmaContainer.className = 'hasil-container tidak-wajib';
+                    // [DIUBAH] Menampilkan satuan yang dipilih
+                    hasilKurmaContainer.innerHTML = `<h3>Belum Wajib Zakat</h3><p>Hasil panen Anda (${formatAngka(hasilPanenInput)} ${satuan}) belum mencapai nishab (${formatAngka(NISHAB_KG)} kg).</p>`;
+                }
+            }
+            
+            // === FUNGSI KALKULASI ZAKAT PRODUKTIF ===
+            function hitungZakatProduktif() {
+                const hargaEmas = parseFloat(cleanInput(document.getElementById('hargaEmasProduktif').value)) || 0;
+                const nilaiNishab = hargaEmas * 77.5;
+                displayNishabProduktif.textContent = formatRupiah(nilaiNishab);
+
+                const biayaBibit = parseFloat(cleanInput(document.getElementById('biayaBibit').value)) || 0;
+                const simpanan = parseFloat(cleanInput(document.getElementById('simpananProduktif').value)) || 0;
+                const piutang = parseFloat(cleanInput(document.getElementById('piutangProduktif').value)) || 0;
+                const utang = parseFloat(cleanInput(document.getElementById('utangProduktif').value)) || 0;
+
+                const asetBersih = (biayaBibit + simpanan + piutang) - utang;
+
+                if (asetBersih >= nilaiNishab) {
+                    const zakat = asetBersih * 0.025;
+                    hasilProduktifContainer.className = 'hasil-container wajib';
+                    hasilProduktifContainer.innerHTML = `<h3>Anda Wajib Zakat</h3><p>Jumlah zakat tahunan Anda (2,5%):</p><div class="jumlah-zakat">${formatRupiah(zakat)}</div>`;
+                } else {
+                    hasilProduktifContainer.className = 'hasil-container tidak-wajib';
+                    hasilProduktifContainer.innerHTML = `<h3>Belum Wajib Zakat</h3><p>Total aset bersih Anda (${formatRupiah(asetBersih)}) belum mencapai nishab.</p>`;
+                }
+            }
+
+            // === ATTACH EVENT LISTENERS ===
+            inputPanenKurma.addEventListener('input', formatInputEvent);
+            inputPanenKurma.addEventListener('input', hitungZakatKurmaAnggur);
+            selectSatuanKurma.addEventListener('change', hitungZakatKurmaAnggur); // [DIUBAH]
+            radiosIrigasiKurma.forEach(radio => radio.addEventListener('change', () => {
+                document.querySelectorAll('input[name="irigasiKurma"]').forEach(r => r.parentElement.classList.remove('selected'));
+                radio.parentElement.classList.add('selected');
+                hitungZakatKurmaAnggur();
+            }));
+            
+            inputsProduktif.forEach(el => {
+                el.addEventListener('input', formatInputEvent);
+                el.addEventListener('input', hitungZakatProduktif);
+            });
+
+            // Inisialisasi awal
+            hasilKurmaContainer.innerHTML = `<p>Pilih salah satu opsi di atas untuk memulai perhitungan.</p>`;
+            hasilProduktifContainer.innerHTML = `<p>Pilih salah satu opsi di atas untuk memulai perhitungan.</p>`;
+            formatInputEvent({target: document.getElementById('hargaEmasProduktif')});
+        });
+    </script>
+
+</body>
+</html>
