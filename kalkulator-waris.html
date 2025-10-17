@@ -1,1 +1,431 @@
-jht
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Waris Islam (Faraid) - Profesional</title>
+    <style>
+        :root {
+            --primary-color: #1d4ed8;
+            --light-gray: #f9fafb;
+            --border-color: #e5e7eb;
+            --text-color: #1f2937;
+            --muted-color: #6b7280;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --success-text: #166534;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            font-size: 15px;
+        }
+        .container {
+            width: 100%;
+            max-width: 720px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+            margin: 20px auto;
+        }
+        .header { background-color: var(--primary-color); color: #fff; padding: 16px; text-align: center; border-radius: 12px 12px 0 0; }
+        .header h1 { margin: 0; font-size: 1.5rem; }
+        
+        .progress-bar { display: flex; padding: 16px 25px; border-bottom: 1px solid var(--border-color); }
+        .progress-step { flex: 1; text-align: center; position: relative; font-weight: 600; font-size: 0.85rem; color: var(--muted-color); }
+        .progress-step .dot { display: block; width: 18px; height: 18px; background: #fff; border: 2px solid var(--border-color); border-radius: 50%; margin: 0 auto 5px; transition: all 0.3s ease; }
+        .progress-step.active { color: var(--primary-color); }
+        .progress-step.active .dot { border-color: var(--primary-color); background: var(--primary-color); }
+        
+        .form-container, .result-container { padding: 25px; }
+        .form-step { display: none; animation: fadeIn 0.4s ease; }
+        .form-step.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        h2 { font-size: 1.3rem; font-weight: 700; color: var(--text-color); margin-top: 0; margin-bottom: 12px; text-align: center; }
+        p.subtitle { text-align: center; color: var(--muted-color); margin-top: -8px; margin-bottom: 25px; font-size: 0.9rem; }
+        .input-group { margin-bottom: 16px; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; }
+        
+        .radio-options { display: grid; gap: 8px; }
+        .radio-options input[type="radio"] { display: none; }
+        .radio-options label { display: block; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+        .radio-options label:hover { border-color: var(--primary-color); }
+        .radio-options input[type="radio"]:checked + label { border-color: var(--primary-color); background-color: #eff6ff; font-weight: 600; }
+        
+        .asset-list { display: flex; flex-direction: column; gap: 12px; }
+        .asset-row { display: flex; align-items: center; gap: 16px; }
+        .asset-row label { flex-basis: 120px; flex-shrink: 0; font-weight: 600; font-size: 0.9rem; }
+        .asset-row input { flex: 1; padding: 10px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; }
+        .dynamic-asset-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .dynamic-asset-row input { flex: 1; padding: 8px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; }
+        .btn-delete-asset { background: transparent; border: none; color: var(--muted-color); cursor: pointer; font-size: 1.2rem; }
+        .btn-add-asset { background: transparent; border: 1px dashed var(--border-color); color: var(--primary-color); width: 100%; padding: 10px; border-radius: 8px; cursor: pointer; margin-top: 12px; }
+
+        .total-summary { margin-top: 20px; padding: 12px; background: var(--light-gray); border-radius: 8px; text-align: center; }
+        #total-harta-display { font-weight: bold; font-size: 1.2rem; color: var(--primary-color); }
+
+        .heir-input-group { margin-bottom: 12px; }
+        .heir-input-group label { font-weight: normal; display: block; margin-bottom: 5px; }
+        .heir-input-group input { width: 100%; padding: 10px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; }
+        .heir-group-title { font-size: 1rem; font-weight: 700; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); padding-bottom: 5px; margin-top: 25px; margin-bottom: 15px; }
+        .conditional-group { display: none; }
+        
+        .step-navigation { display: flex; justify-content: center; margin-top: 25px; }
+        .btn { background-color: var(--primary-color); color: #fff; border: none; padding: 10px 25px; font-size: 0.95rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
+        .btn:hover { background-color: #1e40af; }
+        .btn-secondary { background-color: #f3f4f6; color: var(--text-color); }
+        
+        /* Halaman Hasil */
+        .result-summary-box { background-color: #eff6ff; border-left: 4px solid var(--primary-color); padding: 15px; margin-bottom: 20px; border-radius: 8px; }
+        #result-cards { display: flex; flex-direction: column; gap: 16px; }
+        .result-card { border: 1px solid var(--border-color); border-radius: 8px; }
+        .rc-main { padding: 12px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+        .rc-main .name { font-weight: 700; font-size: 1.1rem; }
+        .rc-main .share { font-weight: 600; color: var(--primary-color); }
+        .rc-main .nominal { grid-column: 1 / -1; font-size: 1.2rem; font-weight: bold; }
+        .rc-footer { background: var(--light-gray); padding: 10px 12px; font-size: 0.85rem; color: var(--muted-color); border-top: 1px solid var(--border-color); }
+        #rekomendasi-section { margin-top: 30px; }
+        .rekomendasi-item h4 { margin: 0 0 8px 0; font-size: 1.1rem; }
+        .rekomendasi-item ul { list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+        .rekomendasi-item li { background-color: var(--light-gray); padding: 10px; border-radius: 6px; font-size: 0.9rem; }
+        .rekomendasi-item .strong-recommendation { background-color: #fefce8; border: 1px solid #fde047; color: #713f12; }
+
+        /* Spotlight Note */
+        .spotlight-note {
+            background-color: #eff6ff;
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 25px 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .spotlight-note p { margin: 0; }
+        .spotlight-note .cta-link {
+            font-weight: 600;
+            color: var(--primary-color);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><h1>Kalkulator Waris Faraid</h1></div>
+        
+        <div id="form-section">
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="1"><span class="dot"></span>Informasi Umum</div>
+                <div class="progress-step" data-step="2"><span class="dot"></span>Informasi Harta</div>
+                <div class="progress-step" data-step="3"><span class="dot"></span>Ahli Waris</div>
+            </div>
+            
+            <div id="form-container" class="form-container">
+                <div id="step-1" class="form-step active">
+                    <h2>Informasi Umum Pewaris</h2><p class="subtitle">Pilih jenis kelamin dan status perkawinan.</p>
+                    <div class="input-group"><label>Jenis kelamin pewaris</label><div class="radio-options"><input type="radio" id="gender-laki" name="gender" value="laki" checked><label for="gender-laki">Laki-laki</label><input type="radio" id="gender-perempuan" name="gender" value="perempuan"><label for="gender-perempuan">Perempuan</label></div></div>
+                    <div class="input-group"><label>Apakah pewaris telah menikah?</label><div class="radio-options"><input type="radio" id="menikah-ya" name="menikah" value="ya" checked><label for="menikah-ya">Ya, telah menikah</label><input type="radio" id="menikah-tidak" name="menikah" value="tidak"><label for="menikah-tidak">Tidak/Belum menikah</label></div></div>
+                </div>
+                <div id="step-2" class="form-step">
+                    <h2>Informasi Harta Pewaris</h2><p class="subtitle">Isi nilai aset yang dimiliki. Kosongkan jika tidak ada.</p>
+                    <div class="asset-list">
+                        <div class="asset-row"><label>Rumah</label><input type="text" id="aset-rumah" class="asset-value formatted-number" placeholder="Nilai (Rp)" data-asset-name="Rumah"></div>
+                        <div class="asset-row"><label>Tanah</label><input type="text" id="aset-tanah" class="asset-value formatted-number" placeholder="Nilai (Rp)" data-asset-name="Tanah"></div>
+                        <div class="asset-row"><label>Perhiasan</label><input type="text" id="aset-perhiasan" class="asset-value formatted-number" placeholder="Nilai (Rp)" data-asset-name="Perhiasan"></div>
+                        <div class="asset-row"><label>Uang/Tabungan</label><input type="text" id="aset-uang" class="asset-value formatted-number" placeholder="Nilai (Rp)" data-asset-name="Uang/Tabungan"></div>
+                        <div class="asset-row"><label>Investasi</label><input type="text" id="aset-saham" class="asset-value formatted-number" placeholder="Nilai (Rp)" data-asset-name="Investasi"></div>
+                        <div class="asset-row"><label>Kendaraan</label><input type="text" id="aset-kendaraan" class="asset-value formatted-number" placeholder="Nilai (Rp)" data-asset-name="Kendaraan"></div>
+                    </div>
+                    <hr style="border:none; border-top:1px solid var(--border-color); margin: 20px 0;">
+                    <div id="dynamic-assets-container"></div>
+                    <button id="add-asset-btn" type="button" class="btn-add-asset">Tambah Harta Lainnya</button>
+                    <div class="total-summary"><strong>Total Harta Bersih:</strong> <span id="total-harta-display">Rp 0</span></div>
+                </div>
+                <div id="step-3" class="form-step">
+                    <h2>Informasi Ahli Waris</h2><p class="subtitle">Isi jumlah ahli waris yang hidup. Kosongkan jika tidak ada.</p>
+                    <div class="heir-group-title">Keluarga Inti</div>
+                    <div id="suami-group" class="heir-input-group"><label>Suami</label><input type="number" id="suami" min="0" max="1" placeholder="0 atau 1"></div>
+                    <div id="istri-group" class="heir-input-group"><label>Istri</label><input type="number" id="istri" min="0" max="4" placeholder="Jumlah istri"></div>
+                    <div class="heir-input-group"><label>Anak Laki-laki</label><input type="number" id="anakLaki" min="0" placeholder="Jumlah"></div>
+                    <div class="heir-input-group"><label>Anak Perempuan</label><input type="number" id="anakPerempuan" min="0" placeholder="Jumlah"></div>
+                    <div id="cucu-group" class="conditional-group"><div class="heir-input-group"><label>Cucu Laki-laki (dari Anak Laki-laki)</label><input type="number" id="cucuLaki" min="0" placeholder="Jumlah"></div></div>
+                    <div class="heir-group-title">Garis Keturunan ke Atas</div>
+                    <div class="heir-input-group"><label>Ayah</label><input type="number" id="ayah" min="0" max="1" placeholder="0 atau 1"></div>
+                    <div class="heir-input-group"><label>Ibu</label><input type="number" id="ibu" min="0" max="1" placeholder="0 atau 1"></div>
+                    <div id="kakek-group" class="conditional-group heir-input-group"><label>Kakek (dari Ayah)</label><input type="number" id="kakek" min="0" max="1" placeholder="0 atau 1"></div>
+                    <div id="saudara-group" class="conditional-group"><div class="heir-group-title">Saudara/i</div><div class="heir-input-group"><label>Saudara Laki-laki Kandung</label><input type="number" id="saudaraLaki" min="0" placeholder="Jumlah"></div><div class="heir-input-group"><label>Saudari Perempuan Kandung</label><input type="number" id="saudariPerempuan" min="0" placeholder="Jumlah"></div></div>
+                </div>
+
+                <div class="step-navigation" style="padding: 0 25px 25px;">
+                    <button id="btn-kembali" class="btn btn-secondary" style="display: none;">Kembali</button>
+                    <button id="btn-selanjutnya" class="btn">Selanjutnya</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="result-section" class="result-container" style="display: none;">
+            <h2>Hasil Perhitungan Waris</h2>
+            <div id="result-summary-box" class="result-summary-box"></div>
+            
+            <div class="spotlight-note">
+                <p><b>Catatan Penting:</b> Aplikasi ini hanya alat bantu untuk mempermudah. Untuk hasil yang lebih presisi dan bijaksana, silakan konsultasikan dengan ustaz, kyai atau pemuka agama yang kompeten dengan ilmu waris. <br>Atau Anda bisa 
+                <a href="https://santrilogy.myr.id/pl/konsultasi-waris" target="_blank" rel="noopener noreferrer" class="cta-link">konsultasi melalui chat dengan Ahli yang kami sediakan</a>.</p>
+            </div>
+
+            <div id="result-cards"></div>
+            <div id="rekomendasi-section"></div>
+            <div class="step-navigation">
+                <button id="btn-hitung-ulang" class="btn">Hitung Ulang</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM ELEMENTS & STATE ---
+        const formSection = document.getElementById('form-section');
+        const resultSection = document.getElementById('result-section');
+        const steps = document.querySelectorAll('.form-step');
+        const progressSteps = document.querySelectorAll('.progress-step');
+        const btnKembali = document.getElementById('btn-kembali');
+        const btnSelanjutnya = document.getElementById('btn-selanjutnya');
+        const btnHitungUlang = document.getElementById('btn-hitung-ulang');
+        let currentStep = 1;
+
+        // --- HELPER FUNCTIONS ---
+        const formatRupiah = (number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+        const parseRupiah = (str) => parseInt(String(str).replace(/[^0-9]/g, '')) || 0;
+        const getVal = (id) => parseInt(document.getElementById(id).value) || 0;
+        
+        // --- UI LOGIC ---
+        function showStep(stepNumber) {
+            steps.forEach(step => step.classList.remove('active'));
+            document.getElementById(`step-${stepNumber}`).classList.add('active');
+            progressSteps.forEach((step, index) => step.classList.toggle('active', index + 1 <= stepNumber));
+            btnKembali.style.display = (stepNumber === 1) ? 'none' : 'inline-block';
+            btnSelanjutnya.textContent = (stepNumber === steps.length) ? 'Lihat Hasil Perhitungan' : 'Selanjutnya';
+            if(stepNumber === 3) updateHeirVisibility();
+        }
+
+        function formatNumberInput(e) {
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            e.target.value = value ? new Intl.NumberFormat('id-ID').format(value) : '';
+            updateTotalHarta();
+        }
+
+        function updateTotalHarta() {
+            let total = 0;
+            document.querySelectorAll('.asset-value, .dynamic-asset-value').forEach(input => total += parseRupiah(input.value));
+            document.getElementById('total-harta-display').textContent = formatRupiah(total);
+        }
+
+        function updateHeirVisibility() {
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const menikah = document.querySelector('input[name="menikah"]:checked').value === 'ya';
+            document.getElementById('suami-group').style.display = (gender === 'perempuan' && menikah) ? 'block' : 'none';
+            document.getElementById('istri-group').style.display = (gender === 'laki' && menikah) ? 'block' : 'none';
+            
+            const ayahAda = getVal('ayah') > 0;
+            const anakLakiAda = getVal('anakLaki') > 0;
+            document.getElementById('cucu-group').style.display = !anakLakiAda ? 'block' : 'none';
+            document.getElementById('kakek-group').style.display = !ayahAda ? 'block' : 'none';
+            document.getElementById('saudara-group').style.display = !ayahAda && !anakLakiAda ? 'block' : 'none';
+        }
+
+        // --- CALCULATION LOGIC ---
+        function calculateWarisan() {
+            const totalHarta = parseRupiah(document.getElementById('total-harta-display').textContent);
+            if(totalHarta === 0) { alert("Total harta tidak boleh nol."); return; }
+            
+            const pewarisLaki = document.querySelector('input[name="gender"]:checked').value === 'laki';
+            
+            const H = {
+                suami: getVal('suami'), istri: getVal('istri'),
+                anakLaki: getVal('anakLaki'), anakPerempuan: getVal('anakPerempuan'),
+                ayah: getVal('ayah'), ibu: getVal('ibu'),
+                cucuLaki: getVal('cucuLaki'),
+                kakek: getVal('kakek'),
+                saudaraLaki: getVal('saudaraLaki'), saudariPerempuan: getVal('saudariPerempuan')
+            };
+
+            let sisaHarta = totalHarta;
+            const hasil = [];
+            const adaAnak = H.anakLaki > 0 || H.anakPerempuan > 0;
+            const adaAnakLaki = H.anakLaki > 0;
+            const adaAyah = H.ayah > 0;
+
+            if (!pewarisLaki && H.suami > 0) {
+                const bagian = adaAnak ? 1/4 : 1/2;
+                const jatah = totalHarta * bagian;
+                hasil.push({ nama: "Suami", bagian: adaAnak ? "1/4" : "1/2", nominal: jatah, dasar: "QS. An-Nisa: 12. Mendapat 1/4 karena ada anak, atau 1/2 jika tidak ada." });
+                sisaHarta -= jatah;
+            }
+            if (pewarisLaki && H.istri > 0) {
+                const bagian = adaAnak ? 1/8 : 1/4;
+                const jatah = totalHarta * bagian;
+                hasil.push({ nama: `${H.istri} Istri`, bagian: adaAnak ? "1/8" : "1/4", nominal: jatah, dasar: "QS. An-Nisa: 12. Mendapat 1/8 karena ada anak, atau 1/4 jika tidak ada." });
+                sisaHarta -= jatah;
+            }
+            if (adaAyah) {
+                const bagian = 1/6;
+                const jatah = totalHarta * bagian;
+                hasil.push({ nama: "Ayah", bagian: "1/6", nominal: jatah, dasar: "QS. An-Nisa: 11. Mendapat 1/6 karena pewaris memiliki anak." });
+                sisaHarta -= jatah;
+            }
+            if (H.ibu > 0) {
+                const adaSaudara = H.saudaraLaki + H.saudariPerempuan > 1;
+                const bagian = (adaAnak || adaSaudara) ? 1/6 : 1/3;
+                const jatah = totalHarta * bagian;
+                hasil.push({ nama: "Ibu", bagian: (adaAnak || adaSaudara) ? "1/6" : "1/3", nominal: jatah, dasar: "QS. An-Nisa: 11. Mendapat 1/6 karena ada anak/saudara, atau 1/3 jika tidak." });
+                sisaHarta -= jatah;
+            }
+            if (!adaAnakLaki && H.anakPerempuan > 0) {
+                const bagian = H.anakPerempuan === 1 ? 1/2 : 2/3;
+                const jatah = totalHarta * bagian;
+                hasil.push({ nama: `${H.anakPerempuan} Anak Perempuan`, bagian: H.anakPerempuan === 1 ? "1/2" : "2/3", nominal: jatah, dasar: "QS. An-Nisa: 11. Anak perempuan tunggal mendapat 1/2, dua atau lebih mendapat 2/3." });
+                sisaHarta -= jatah;
+            }
+            if (!adaAyah && H.kakek > 0) {
+                 const bagian = 1/6;
+                 const jatah = totalHarta * bagian;
+                 hasil.push({ nama: "Kakek", bagian: "1/6", nominal: jatah, dasar: "Menggantikan posisi Ayah mendapat 1/6 karena Ayah tidak ada." });
+                 sisaHarta -= jatah;
+            }
+
+            if (sisaHarta > 1) {
+                let asabahDitemukan = false;
+                if (adaAnakLaki) {
+                    const totalPoin = (H.anakLaki * 2) + H.anakPerempuan;
+                    const nilaiPerPoin = sisaHarta / totalPoin;
+                    if (H.anakLaki > 0) {
+                         hasil.push({ nama: `${H.anakLaki} Anak Laki-laki`, bagian: `Sisa ('Asabah)`, nominal: nilaiPerPoin * H.anakLaki * 2, dasar: "QS. An-Nisa: 11. Menjadi 'Asabah (penerima sisa) bersama anak perempuan dengan rasio 2:1." });
+                    }
+                    if(H.anakPerempuan > 0) {
+                        hasil.push({ nama: `${H.anakPerempuan} Anak Perempuan`, bagian: `Sisa ('Asabah)`, nominal: nilaiPerPoin * H.anakPerempuan, dasar: "Menerima sisa bersama anak laki-laki." });
+                    }
+                    asabahDitemukan = true;
+                } else if (H.cucuLaki > 0) {
+                    hasil.push({ nama: `${H.cucuLaki} Cucu Laki-laki`, bagian: `Sisa ('Asabah)`, nominal: sisaHarta, dasar: "Menjadi 'Asabah karena tidak ada anak laki-laki." });
+                    asabahDitemukan = true;
+                }
+                
+                if (!asabahDitemukan && adaAyah) {
+                    const jatahAyah = hasil.find(h => h.nama === "Ayah");
+                    jatahAyah.nominal += sisaHarta;
+                    jatahAyah.bagian += " + Sisa";
+                    jatahAyah.dasar = "Mendapat 1/6 sebagai Ashabul Furudh dan sisa sebagai 'Asabah karena tidak ada keturunan laki-laki.";
+                    asabahDitemukan = true;
+                } else if (!asabahDitemukan && !adaAyah && H.kakek > 0) {
+                    const jatahKakek = hasil.find(h => h.nama === "Kakek");
+                    jatahKakek.nominal += sisaHarta;
+                    jatahKakek.bagian += " + Sisa";
+                    jatahKakek.dasar += " Kakek juga menjadi 'Asabah.";
+                    asabahDitemukan = true;
+                } else if (!asabahDitemukan && H.saudaraLaki > 0) {
+                    hasil.push({ nama: `${H.saudaraLaki} Sdr. Laki-laki`, bagian: `Sisa ('Asabah)`, nominal: sisaHarta, dasar: "Menjadi 'Asabah karena tidak ada keturunan laki-laki atau ayah." });
+                }
+            }
+            displayResults(hasil, totalHarta);
+        }
+
+        function displayResults(hasil, totalHarta) {
+            formSection.style.display = 'none';
+            resultSection.style.display = 'block';
+
+            document.getElementById('result-summary-box').innerHTML = `Dengan total harta bersih <strong>${formatRupiah(totalHarta)}</strong>, berikut adalah pembagiannya:`;
+
+            const cardsContainer = document.getElementById('result-cards');
+            cardsContainer.innerHTML = '';
+            if (hasil.length > 0) {
+                hasil.sort((a,b) => b.nominal - a.nominal).forEach(h => {
+                    cardsContainer.innerHTML += `
+                        <div class="result-card">
+                            <div class="rc-main"><span class="name">${h.nama}</span><span class="share">${h.bagian}</span><span class="nominal">${formatRupiah(h.nominal)}</span></div>
+                            <div class="rc-footer">${h.dasar || ''}</div>
+                        </div>`;
+                });
+            } else {
+                cardsContainer.innerHTML = `<p style="text-align:center;">Tidak ada ahli waris yang berhak sesuai data yang dimasukkan.</p>`;
+            }
+
+            const assets = [];
+            document.querySelectorAll('.asset-value, .dynamic-asset-value').forEach(input => {
+                const value = parseRupiah(input.value);
+                if (value > 0) {
+                    const name = input.dataset.assetName || (input.previousElementSibling ? input.previousElementSibling.value : 'Aset Lainnya');
+                    assets.push({ nama: name, nilai: value });
+                }
+            });
+            displayRekomendasi(hasil, assets);
+        }
+
+        function displayRekomendasi(hasil, assets) {
+            const container = document.getElementById('rekomendasi-section');
+            container.innerHTML = '';
+            if (assets.length === 0) return;
+
+            let html = `<div class="heir-group-title" style="margin-top: 30px;">Rekomendasi Alokasi Aset</div>
+                        <p class="subtitle" style="margin-bottom: 15px;">Opsi berikut dapat dijadikan bahan musyawarah untuk membagi aset fisik.</p>`;
+            
+            assets.sort((a, b) => b.nilai - a.nilai);
+
+            assets.forEach(asset => {
+                html += `
+                    <div class="rekomendasi-item">
+                        <h4>Opsi untuk ${asset.nama} (Nilai: ${formatRupiah(asset.nilai)})</h4>
+                        <ul>`;
+                
+                let canBeTakenDirectly = false;
+                hasil.forEach(heir => {
+                    const selisih = heir.nominal - asset.nilai;
+                    if (selisih >= 0) {
+                        html += `<li><strong>${heir.nama}</strong> bisa mengambil aset ini dan masih berhak atas sisa tunai ${formatRupiah(selisih)}.</li>`;
+                        canBeTakenDirectly = true;
+                    } else {
+                        html += `<li><strong>${heir.nama}</strong> bisa mengambil aset ini dengan membayar selisih ${formatRupiah(Math.abs(selisih))} kepada ahli waris lain.</li>`;
+                    }
+                });
+
+                if (!canBeTakenDirectly) {
+                    html += `<li class="strong-recommendation"><strong>Rekomendasi Utama:</strong> Karena tidak ada ahli waris yang haknya mencukupi, disarankan aset ini <strong>dijual</strong> dan hasilnya dibagi sesuai porsi, atau menjadi <strong>milik bersama</strong>.</li>`;
+                }
+                html += `</ul></div>`;
+            });
+            container.innerHTML = html;
+        }
+        
+        // --- EVENT LISTENERS ---
+        btnSelanjutnya.addEventListener('click', () => {
+            if (currentStep < steps.length) {
+                currentStep++;
+                showStep(currentStep);
+            } else {
+                calculateWarisan();
+            }
+        });
+        btnKembali.addEventListener('click', () => { if (currentStep > 1) { currentStep--; showStep(currentStep); } });
+        btnHitungUlang.addEventListener('click', () => { location.reload(); });
+        
+        document.querySelectorAll('.formatted-number').forEach(el => el.addEventListener('input', formatNumberInput));
+        document.getElementById('add-asset-btn').addEventListener('click', () => {
+            const container = document.getElementById('dynamic-assets-container');
+            const newRow = document.createElement('div');
+            newRow.className = 'dynamic-asset-row';
+            newRow.innerHTML = `<input type="text" placeholder="Nama Harta (misal: Piutang)"><input type="text" class="dynamic-asset-value formatted-number" placeholder="Nilai (Rp)"><button type="button" class="btn-delete-asset" title="Hapus">&times;</button>`;
+            container.appendChild(newRow);
+            newRow.querySelector('.formatted-number').addEventListener('input', formatNumberInput);
+            newRow.querySelector('.btn-delete-asset').addEventListener('click', () => { newRow.remove(); updateTotalHarta(); });
+        });
+        
+        document.querySelectorAll('#step-1 input, #step-3 input').forEach(input => {
+            input.addEventListener('input', updateHeirVisibility);
+        });
+        
+        // --- INITIALIZATION ---
+        showStep(currentStep);
+    </script>
+</body>
+</html>
