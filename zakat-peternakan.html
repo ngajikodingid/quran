@@ -1,0 +1,93 @@
+<style>
+/* CSS untuk Halaman Coming Soon */
+.coming-soon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh; 
+    text-align: center;
+    padding: 40px 20px;
+    font-family: inherit;
+    
+    /* Mencegah 'kedipan' horizontal saat animasi */
+    overflow: hidden; 
+}
+
+.coming-soon-title {
+    font-size: 2.25rem; /* 36px */
+    font-weight: 600;
+    color: #111; 
+    margin-bottom: 12px;
+    line-height: 1.3;
+    
+    /* --- Tambahan Animasi --- */
+    /* 1. Atur kondisi awal (sebelum animasi) */
+    opacity: 0; 
+    /* 2. Terapkan animasi 'fadeInUp' */
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.coming-soon-description {
+    font-size: 1.1rem; /* 17px-18px */
+    color: #555; 
+    line-height: 1.6;
+    margin: 0;
+    max-width: 450px;
+    
+    /* --- Tambahan Animasi --- */
+    /* 1. Atur kondisi awal */
+    opacity: 0;
+    /* 2. Terapkan animasi yang sama, tapi dengan 'delay' */
+    animation: fadeInUp 0.8s ease-out 0.3s forwards; 
+    /* '0.3s' adalah delay, agar muncul setelah judul */
+}
+
+/* --- Tambahan Animasi untuk Emoji --- */
+.wave-emoji {
+    /* Wajib 'inline-block' agar bisa dianimasikan */
+    display: inline-block; 
+    
+    /* Terapkan animasi 'waveHand' */
+    animation: waveHand 2.5s infinite;
+    
+    /* Atur titik tumpu rotasi (seperti pergelangan tangan) */
+    transform-origin: 70% 70%; 
+}
+
+/* --- Keyframes (Definisi Animasi) --- */
+
+/* Keyframes untuk animasi "fade in & slide up" */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px); /* Mulai dari 20px di bawah */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0); /* Kembali ke posisi normal */
+    }
+}
+
+/* Keyframes untuk animasi "waving hand" */
+@keyframes waveHand {
+    0% { transform: rotate(0deg); }
+    10% { transform: rotate(14deg); }
+    20% { transform: rotate(-8deg); }
+    30% { transform: rotate(14deg); }
+    40% { transform: rotate(-4deg); }
+    50% { transform: rotate(10deg); }
+    60% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+}
+</style>
+
+<div class="coming-soon-container">
+    <h2 class="coming-soon-title">
+        Coming Soon
+    </h2>
+    <p class="coming-soon-description">
+        Fitur akan segera hadir. Kembali lagi lain waktu.. 
+        <span class="wave-emoji">👋</span>
+    </p>
+</div>
