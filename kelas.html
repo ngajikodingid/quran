@@ -1,0 +1,204 @@
+<style>
+/* --- Definisi Animasi (Keyframes) --- */
+
+/* Animasi untuk teks (Fade in & Slide up) */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Animasi untuk emoji melambai */
+@keyframes waveHand {
+    0% { transform: rotate(0deg); }
+    10% { transform: rotate(14deg); }
+    20% { transform: rotate(-8deg); }
+    30% { transform: rotate(14deg); }
+    40% { transform: rotate(-4deg); }
+    50% { transform: rotate(10deg); }
+    60% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Animasi untuk gradasi background teks */
+@keyframes gradientText {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* [BARU] Keyframes untuk Efek Aurora */
+@keyframes auroraMove {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        transform: translate(80px, -60px) scale(1.3);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translate(0px, 0px) scale(1);
+        opacity: 0.4;
+    }
+}
+
+/* --- Gaya Utama --- */
+
+.coming-soon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: inherit; /* Mewarisi font Median UI */
+    
+    /* [DIUBAH] Desain Kartu Dark Mode */
+    width: 100%;
+    min-height: 60vh;
+    padding: 60px 30px; 
+    box-sizing: border-box; 
+    border-radius: 20px; 
+    
+    /* [PENTING] Untuk penanda posisi & kliping aurora */
+    position: relative; 
+    overflow: hidden; 
+    
+    /* [DIUBAH] Ganti background jadi gelap */
+    background: #0a0a0f; 
+}
+
+/* [BARU] Elemen Pseude untuk Aurora (Biru) */
+.coming-soon-container::before {
+    content: '';
+    position: absolute;
+    z-index: 1; /* Di belakang teks */
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    
+    /* [DIUBAH] Warna cahaya aurora */
+    background: radial-gradient(circle, #4a69ff 0%, transparent 65%);
+    
+    /* [DIUBAH] Posisi awal & Efek blur */
+    top: -80px;
+    left: -100px;
+    filter: blur(100px);
+    
+    /* [DIUBAH] Terapkan animasi aurora */
+    animation: auroraMove 14s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+/* [BARU] Elemen Pseude untuk Aurora (Pink) */
+.coming-soon-container::after {
+    content: '';
+    position: absolute;
+    z-index: 1; /* Di belakang teks */
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    
+    /* [DIUBAH] Warna cahaya aurora */
+    background: radial-gradient(circle, #ff3f8b 0%, transparent 65%);
+    
+    /* [DIUBAH] Posisi awal & Efek blur */
+    bottom: -100px;
+    right: -80px;
+    filter: blur(100px);
+    
+    /* [DIUBAH] Terapkan animasi (delay agar tidak sinkron) */
+    animation: auroraMove 12s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+    animation-delay: -6s;
+}
+
+
+.coming-soon-title {
+    font-size: 2.5rem; /* 40px */
+    font-weight: 700;
+    margin-bottom: 16px;
+    line-height: 1.3;
+    opacity: 0; 
+    
+    /* Gradasi teks ini akan terlihat bagus di background gelap */
+    background: linear-gradient(90deg, #a6c1ff, #f3e7ff, #ffe7f0, #a6c1ff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    
+    /* [TAMBAHAN] Pastikan teks di atas aurora */
+    position: relative;
+    z-index: 2;
+
+    /* Animasi (sedikit diubah agar gradasi teks lebih cepat) */
+    animation-name: fadeInUp, gradientText;
+    animation-duration: 0.8s, 4s;
+    animation-timing-function: ease-out, ease;
+    animation-delay: 0s, 1s;
+    animation-iteration-count: 1, infinite;
+    animation-fill-mode: forwards, none;
+}
+
+.coming-soon-description {
+    font-size: 1.15rem; 
+    
+    /* [DIUBAH] Warna teks agar kontras */
+    color: #b0b8d9; 
+    
+    line-height: 1.6;
+    margin: 0;
+    max-width: 480px;
+    
+    /* [TAMBAHAN] Pastikan teks di atas aurora */
+    position: relative;
+    z-index: 2;
+    
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.3s forwards;
+}
+
+.wave-emoji {
+    display: inline-block;
+    transform-origin: 70% 70%;
+    animation: waveHand 2.5s infinite;
+    animation-delay: 1.5s;
+    
+    /* [TAMBAHAN] Pastikan emoji di atas aurora */
+    position: relative;
+    z-index: 2;
+}
+
+/* --- [RESPONSIVE] (Tidak berubah) --- */
+@media (max-width: 480px) {
+    .coming-soon-container {
+        padding: 40px 20px;
+        min-height: 50vh;
+        border-radius: 12px;
+    }
+    
+    .coming-soon-title {
+        font-size: 2rem; /* 32px */
+    }
+
+    .coming-soon-description {
+        font-size: 1rem; /* 16px */
+    }
+    
+    /* [RESPONSIVE] Kecilkan juga elemen aurora di HP */
+    .coming-soon-container::before,
+    .coming-soon-container::after {
+        width: 250px;
+        height: 250px;
+        filter: blur(80px);
+    }
+}
+</style>
+
+<div class="coming-soon-container">
+    <h2 class="coming-soon-title">
+        Coming Soon
+    </h2>
+    <p class="coming-soon-description">
+        Fitur akan segera hadir. Kembali lagi lain waktu.. 
+        <span class="wave-emoji">👋</span>
+    </p>
+</div>
