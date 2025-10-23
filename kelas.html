@@ -1,139 +1,89 @@
 <style>
 /* --- Animasi --- */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes waveHand {
-  0%,60%,100% { transform: rotate(0deg); }
-  10% { transform: rotate(14deg); }
-  20% { transform: rotate(-8deg); }
-  30% { transform: rotate(14deg); }
-  40% { transform: rotate(-4deg); }
-  50% { transform: rotate(10deg); }
-}
-@keyframes gradientText {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-@keyframes auroraMove {
-  0% { transform: translate(0px, 0px) scale(1); opacity: 0.4; }
-  50% { transform: translate(80px, -60px) scale(1.3); opacity: 0.7; }
-  100% { transform: translate(0px, 0px) scale(1); opacity: 0.4; }
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes waveHand{0%,60%,100%{transform:rotate(0)}10%{transform:rotate(14deg)}20%{transform:rotate(-8deg)}30%{transform:rotate(14deg)}40%{transform:rotate(-4deg)}50%{transform:rotate(10deg)}}
+@keyframes gradientText{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes auroraMove{0%{transform:translate(0,0) scale(1);opacity:.4}50%{transform:translate(80px,-60px) scale(1.3);opacity:.7}100%{transform:translate(0,0) scale(1);opacity:.4}}
+
+/* --- Container --- */
+.coming-soon-container{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  font-family:inherit;width:100%;
+  min-height:60vh; /* desktop/tablet default */
+  padding:80px 24px;box-sizing:border-box;border-radius:24px;position:relative;overflow:hidden;
+  background:#0a0a0f;
 }
 
-/* --- Container Utama --- */
-.coming-soon-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-family: inherit;
-  width: 100%;
-  min-height: 60vh;
-  padding: 80px 24px;
-  box-sizing: border-box;
-  border-radius: 24px;
-  position: relative;
-  overflow: hidden;
-  background: #0a0a0f;
-}
-
-/* Aurora Background */
+/* Aurora */
 .coming-soon-container::before,
-.coming-soon-container::after {
-  content: '';
-  position: absolute;
-  width: 380px;
-  height: 380px;
-  border-radius: 50%;
-  filter: blur(100px);
-  z-index: 1;
+.coming-soon-container::after{
+  content:'';position:absolute;width:380px;height:380px;border-radius:50%;filter:blur(100px);z-index:1;
 }
-.coming-soon-container::before {
-  background: radial-gradient(circle, #4a69ff 0%, transparent 65%);
-  top: -80px;
-  left: -100px;
-  animation: auroraMove 14s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+.coming-soon-container::before{
+  background:radial-gradient(circle,#4a69ff 0%,transparent 65%);
+  top:-80px;left:-100px;animation:auroraMove 14s cubic-bezier(.25,1,.5,1) infinite;
 }
-.coming-soon-container::after {
-  background: radial-gradient(circle, #ff3f8b 0%, transparent 65%);
-  bottom: -100px;
-  right: -80px;
-  animation: auroraMove 12s cubic-bezier(0.25, 1, 0.5, 1) infinite;
-  animation-delay: -6s;
+.coming-soon-container::after{
+  background:radial-gradient(circle,#ff3f8b 0%,transparent 65%);
+  bottom:-100px;right:-80px;animation:auroraMove 12s cubic-bezier(.25,1,.5,1) infinite;animation-delay:-6s;
 }
 
-/* --- Teks Utama --- */
-.coming-soon-title {
-  font-size: 2.8rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-  line-height: 1.3;
-  opacity: 0;
-  background: linear-gradient(90deg, #a6c1ff, #f3e7ff, #ffe7f0, #a6c1ff);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  z-index: 2;
-  animation: fadeInUp 0.8s ease-out forwards, gradientText 4s ease 1s infinite;
+/* Teks */
+.coming-soon-title{
+  font-weight:700;margin-bottom:20px;line-height:1.22;opacity:0;
+  background:linear-gradient(90deg,#a6c1ff,#f3e7ff,#ffe7f0,#a6c1ff);background-size:200% auto;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  position:relative;z-index:2;
+  /* ukuran adaptif desktop */
+  font-size:clamp(2.4rem,3vw,3rem);
+  animation:fadeInUp .8s ease-out forwards, gradientText 4s ease 1s infinite;
 }
-
-.coming-soon-description {
-  font-size: 1.25rem;
-  color: #b0b8d9;
-  line-height: 1.7;
-  margin: 0;
-  max-width: 520px;
-  position: relative;
-  z-index: 2;
-  opacity: 0;
-  animation: fadeInUp 0.8s ease-out 0.3s forwards;
+.coming-soon-description{
+  color:#b0b8d9;line-height:1.7;margin:0;max-width:560px;position:relative;z-index:2;opacity:0;
+  font-size:clamp(1.1rem,1.6vw,1.25rem);
+  animation:fadeInUp .8s ease-out .3s forwards;
 }
+.wave-emoji{display:inline-block;transform-origin:70% 70%;animation:waveHand 2.5s infinite;animation-delay:1.5s;position:relative;z-index:2}
 
-/* Emoji */
-.wave-emoji {
-  display: inline-block;
-  transform-origin: 70% 70%;
-  animation: waveHand 2.5s infinite;
-  animation-delay: 1.5s;
-  position: relative;
-  z-index: 2;
-}
-
-/* --- Responsive (Mobile) --- */
-@media (max-width: 480px) {
-  .coming-soon-container {
-    padding: 60px 20px;
-    min-height: 55vh;
-    border-radius: 16px;
+/* --- FULLPAGE MOBILE --- */
+@media (max-width: 480px){
+  .coming-soon-container{
+    /* penuh satu layar, aman utk address bar mobile */
+    min-height:100dvh; /* modern browsers */
+    min-height:100svh; /* fallback kecil */
+    padding: max(20px, calc(16px + env(safe-area-inset-top))) 20px max(28px, calc(16px + env(safe-area-inset-bottom)));
+    border-radius:0; /* biar fullpage beneran */
   }
-  .coming-soon-title {
-    font-size: 2.4rem; /* Lebih besar di HP */
-    margin-bottom: 14px;
+  .coming-soon-title{
+    /* besar, tapi tetap aman di berbagai device */
+    font-size:clamp(2.6rem, 9.5vw, 3.6rem);
+    margin-bottom:14px;
   }
-  .coming-soon-description {
-    font-size: 1.15rem;
-    line-height: 1.6;
-    max-width: 90%;
+  .coming-soon-description{
+    font-size:clamp(1.15rem, 4.5vw, 1.35rem);
+    line-height:1.6;
+    max-width:92vw;
   }
+  /* aurora dibesarkan untuk cover layar */
   .coming-soon-container::before,
-  .coming-soon-container::after {
-    width: 280px;
-    height: 280px;
-    filter: blur(90px);
+  .coming-soon-container::after{
+    width:120vw;height:120vw;filter:blur(120px);
   }
+  .coming-soon-container::before{top:-30vw;left:-40vw}
+  .coming-soon-container::after{bottom:-35vw;right:-30vw}
+}
+
+/* Optional: kurangi animasi jika user pilih reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .coming-soon-title,.coming-soon-description{animation:none;opacity:1}
+  .wave-emoji{animation:none}
+  .coming-soon-container::before,.coming-soon-container::after{animation:none}
 }
 </style>
 
 <div class="coming-soon-container">
   <h2 class="coming-soon-title">Coming Soon</h2>
   <p class="coming-soon-description">
-    Fitur akan segera hadir.<br>
-    Kembali lagi lain waktu ya <span class="wave-emoji">👋</span>
+    Fitur akan segera hadir.<br/>Kembali lagi lain waktu ya <span class="wave-emoji">👋</span>
   </p>
 </div>
