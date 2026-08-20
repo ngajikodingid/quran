@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" class="h-full" x-data="quranApp()" :class="{ 'dark': isDarkMode }" :data-theme="currentTheme">
+<html lang="id" class="h-full" x-data="quranApp()" :class="{ 'dark': isDarkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -41,33 +41,12 @@
     </script>
 
     <style>
-        :root, [data-theme="amber"] {
-            --p-50: #fffbeb; --p-100: #fef3c7; --p-200: #fde68a; --p-300: #fcd34d;
-            --p-400: #fbbf24; --p-500: #f59e0b; --p-600: #d97706; --p-700: #b45309;
-            --p-800: #92400e; --p-900: #78350f; --p-950: #451a03;
-            --mushaf-border: #d97706;
+        :root {
+            --p-50: #effaf7; --p-100: #d9f0eb; --p-200: #b3ded6; --p-300: #80c2b6;
+            --p-400: #55a99d; --p-500: #368d86; --p-600: #28746f; --p-700: #215c5a;
+            --p-800: #1b4949; --p-900: #153b3d; --p-950: #0b292c;
+            --mushaf-border: #c98745;
             --mushaf-bg: #fffdf7;
-        }
-        [data-theme="emerald"] {
-            --p-50: #ecfdf5; --p-100: #d1fae5; --p-200: #a7f3d0; --p-300: #6ee7b7;
-            --p-400: #34d399; --p-500: #10b981; --p-600: #059669; --p-700: #047857;
-            --p-800: #065f46; --p-900: #064e3b; --p-950: #022c22;
-            --mushaf-border: #059669;
-            --mushaf-bg: #f9fdfa;
-        }
-        [data-theme="blue"] {
-            --p-50: #eff6ff; --p-100: #dbeafe; --p-200: #bfdbfe; --p-300: #93c5fd;
-            --p-400: #60a5fa; --p-500: #3b82f6; --p-600: #2563eb; --p-700: #1d4ed8;
-            --p-800: #1e40af; --p-900: #1e3a8a; --p-950: #172554;
-            --mushaf-border: #2563eb;
-            --mushaf-bg: #f8fafc;
-        }
-        [data-theme="rose"] {
-            --p-50: #fff1f2; --p-100: #ffe4e6; --p-200: #fecdd3; --p-300: #fda4af;
-            --p-400: #fb7185; --p-500: #f43f5e; --p-600: #e11d48; --p-700: #be123c;
-            --p-800: #9f1239; --p-900: #881337; --p-950: #4c0519;
-            --mushaf-border: #e11d48;
-            --mushaf-bg: #fffafb;
         }
 
         body { 
@@ -1305,20 +1284,6 @@
                 </div>
                 
                 <div class="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-                    <!-- Theme Color Palette -->
-                    <div class="space-y-1.5">
-                        <span class="font-semibold text-gray-700 dark:text-slate-300 flex items-center space-x-1">
-                            <i class="fa-solid fa-palette text-primary-600 dark:text-amber-400"></i>
-                            <span>Tema Warna</span>
-                        </span>
-                        <div class="flex items-center justify-between bg-gray-50 dark:bg-slate-800 p-2 rounded-xl border border-gray-100 dark:border-slate-700">
-                            <button @click="currentTheme = 'amber'; saveThemeSettings()" class="w-7 h-7 rounded-full bg-amber-500 border-2 transition" :class="currentTheme === 'amber' ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'"></button>
-                            <button @click="currentTheme = 'emerald'; saveThemeSettings()" class="w-7 h-7 rounded-full bg-emerald-500 border-2 transition" :class="currentTheme === 'emerald' ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'"></button>
-                            <button @click="currentTheme = 'blue'; saveThemeSettings()" class="w-7 h-7 rounded-full bg-blue-500 border-2 transition" :class="currentTheme === 'blue' ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'"></button>
-                            <button @click="currentTheme = 'rose'; saveThemeSettings()" class="w-7 h-7 rounded-full bg-rose-500 border-2 transition" :class="currentTheme === 'rose' ? 'border-gray-900 dark:border-white scale-110' : 'border-transparent'"></button>
-                        </div>
-                    </div>
-
                     <!-- Qari Selector Menu -->
                     <div class="space-y-1.5 pt-2 border-t dark:border-slate-800">
                         <span class="font-semibold text-gray-700 dark:text-slate-300 flex items-center space-x-1">
@@ -1415,7 +1380,6 @@
                 currentTab: 'home',
                 subTab: 'surah',
                 isDarkMode: false,
-                currentTheme: 'amber',
                 surahs: [],
                 juzIndex: [
                     { number: 1, start: { name: 'Al-Fatihah', ayah: 1 }, end: { name: 'Al-Baqarah', ayah: 141 } },
@@ -1557,9 +1521,6 @@
                     const savedTheme = localStorage.getItem('hataman_dark');
                     if (savedTheme !== null) this.isDarkMode = JSON.parse(savedTheme);
 
-                    const savedColor = localStorage.getItem('hataman_theme');
-                    if (savedColor) this.currentTheme = savedColor;
-
                     const savedLastRead = localStorage.getItem('nurul_quran_lastread');
                     if (savedLastRead) this.lastRead = JSON.parse(savedLastRead);
 
@@ -1660,7 +1621,6 @@
 
                 saveThemeSettings() {
                     localStorage.setItem('hataman_dark', this.isDarkMode);
-                    localStorage.setItem('hataman_theme', this.currentTheme);
                 },
 
                 changeArabicSize(delta) {
@@ -2292,7 +2252,7 @@
                     const data = {
                         lastRead: this.lastRead, juzStatus: this.juzStatus, calendarLogs: this.calendarLogs,
                         userNotes: this.userNotes, totalReadSessions: this.totalReadSessions,
-                        isDarkMode: this.isDarkMode, currentTheme: this.currentTheme,
+                        isDarkMode: this.isDarkMode,
                         arabicFontSize: this.arabicFontSize, translationFontSize: this.translationFontSize,
                         selectedQari: this.selectedQari, mushafDisplayType: this.mushafDisplayType,
                         targetDays: this.targetDays, audioPlaybackRate: this.audioPlaybackRate, audioVolume: this.audioVolume
@@ -2319,7 +2279,6 @@
                                 localStorage.setItem('nurul_quran_sessions', this.totalReadSessions);
                             }
                             if (typeof parsed.isDarkMode === 'boolean') this.isDarkMode = parsed.isDarkMode;
-                            if (typeof parsed.currentTheme === 'string') this.currentTheme = parsed.currentTheme;
                             if (Number.isFinite(Number(parsed.arabicFontSize))) this.arabicFontSize = Math.max(18, Math.min(42, Number(parsed.arabicFontSize)));
                             if (Number.isFinite(Number(parsed.translationFontSize))) this.translationFontSize = Math.max(10, Math.min(22, Number(parsed.translationFontSize)));
                             if (parsed.selectedQari && this.qariNames[parsed.selectedQari]) this.selectedQari = parsed.selectedQari;
@@ -2338,7 +2297,7 @@
                 clearLocalStorageData() {
                     if (!confirm('Yakin ingin menghapus SEMUA data? Tindakan ini tidak dapat dibatalkan.')) return;
                     this.showBackupModal = false;
-                    ['hataman_dark', 'hataman_theme', 'nurul_quran_lastread', 'nurul_quran_juz', 'nurul_quran_calendar', 'nurul_quran_notes', 'nurul_quran_sessions', 'nurul_arabic_size', 'nurul_trans_size', 'nurul_qari', 'nurul_mushaf_type']
+                    ['hataman_dark', 'nurul_quran_lastread', 'nurul_quran_juz', 'nurul_quran_calendar', 'nurul_quran_notes', 'nurul_quran_sessions', 'nurul_arabic_size', 'nurul_trans_size', 'nurul_qari', 'nurul_mushaf_type']
                         .forEach(key => localStorage.removeItem(key));
                     try {
                         indexedDB.deleteDatabase('hataman_db_v2');
